@@ -52,7 +52,7 @@ export default function App() {
 
           <Route
             path="/tickets"
-            element{
+            element={
               <ProtectedRoute allowedRoles={["OWNER", "MANAGER"]}>
                 <Layout>
                   <TicketsList />
