@@ -8,7 +8,7 @@ export function getAuthToken() {
 export async function apiFetch(path: string, options: RequestInit = {}) {
   const token = getAuthToken();
 
-  const headers: HeadersInit = {
+  const headers: any = {
     "Content-Type": "application/json",
     ...(options.headers || {}),
   };
