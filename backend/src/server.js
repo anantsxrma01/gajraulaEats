@@ -49,6 +49,10 @@ app.get("/", (req, res) => {
   res.json({ status: "OK", message: "FDS Backend running" });
 });
 
+app.get("/api", (req, res) => {
+  res.json({ status: "OK", message: "FDS Backend API is LIVE! Access endpoints via /api/..." });
+});
+
 // (optional debug logs hata sakte ho)
 console.log("authRoutes type:", typeof authRoutes);
 console.log("authRoutes value:", authRoutes);
