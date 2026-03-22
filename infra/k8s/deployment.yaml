@@ -1,0 +1,138 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: local-food-delivery
+  labels:
+    app: local-food-delivery
+spec:
+  replicas: 3
+  selector:
+    matchLabels:
+      app: local-food-delivery
+  template:
+    metadata:
+      labels:
+        app: local-food-delivery
+    spec:
+      containers:
+        - name: api-gateway
+          image: your-docker-repo/api-gateway:latest
+          ports:
+            - containerPort: 3000
+          env:
+            - name: NODE_ENV
+              value: "production"
+            - name: DATABASE_URL
+              valueFrom:
+                secretKeyRef:
+                  name: db-secret
+                  key: database-url
+        - name: auth-service
+          image: your-docker-repo/auth-service:latest
+          ports:
+            - containerPort: 4000
+          env:
+            - name: NODE_ENV
+              value: "production"
+            - name: DATABASE_URL
+              valueFrom:
+                secretKeyRef:
+                  name: db-secret
+                  key: database-url
+        - name: restaurant-service
+          image: your-docker-repo/restaurant-service:latest
+          ports:
+            - containerPort: 5000
+          env:
+            - name: NODE_ENV
+              value: "production"
+            - name: DATABASE_URL
+              valueFrom:
+                secretKeyRef:
+                  name: db-secret
+                  key: database-url
+        - name: menu-inventory-service
+          image: your-docker-repo/menu-inventory-service:latest
+          ports:
+            - containerPort: 6000
+          env:
+            - name: NODE_ENV
+              value: "production"
+            - name: DATABASE_URL
+              valueFrom:
+                secretKeyRef:
+                  name: db-secret
+                  key: database-url
+        - name: order-service
+          image: your-docker-repo/order-service:latest
+          ports:
+            - containerPort: 7000
+          env:
+            - name: NODE_ENV
+              value: "production"
+            - name: DATABASE_URL
+              valueFrom:
+                secretKeyRef:
+                  name: db-secret
+                  key: database-url
+        - name: delivery-service
+          image: your-docker-repo/delivery-service:latest
+          ports:
+            - containerPort: 8000
+          env:
+            - name: NODE_ENV
+              value: "production"
+            - name: DATABASE_URL
+              valueFrom:
+                secretKeyRef:
+                  name: db-secret
+                  key: database-url
+        - name: payment-wallet-service
+          image: your-docker-repo/payment-wallet-service:latest
+          ports:
+            - containerPort: 9000
+          env:
+            - name: NODE_ENV
+              value: "production"
+            - name: DATABASE_URL
+              valueFrom:
+                secretKeyRef:
+                  name: db-secret
+                  key: database-url
+        - name: notification-service
+          image: your-docker-repo/notification-service:latest
+          ports:
+            - containerPort: 10000
+          env:
+            - name: NODE_ENV
+              value: "production"
+            - name: DATABASE_URL
+              valueFrom:
+                secretKeyRef:
+                  name: db-secret
+                  key: database-url
+        - name: admin-reports-service
+          image: your-docker-repo/admin-reports-service:latest
+          ports:
+            - containerPort: 11000
+          env:
+            - name: NODE_ENV
+              value: "production"
+            - name: DATABASE_URL
+              valueFrom:
+                secretKeyRef:
+                  name: db-secret
+                  key: database-url
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: local-food-delivery
+spec:
+  selector:
+    app: local-food-delivery
+  ports:
+    - protocol: TCP
+      port: 80
+      targetPort: 3000
+  type: LoadBalancer

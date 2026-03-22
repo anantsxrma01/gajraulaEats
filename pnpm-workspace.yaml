@@ -1,0 +1,5 @@
+packages:
+  - 'apps/*'
+  - '!apps/delivery_partner_app'
+  - 'services/*'
+  - 'libs/*'

@@ -1,0 +1,109 @@
+version: '3.8'
+
+services:
+  api-gateway:
+    build:
+      context: ./services/api-gateway
+      dockerfile: ../../infra/docker/Dockerfile.service
+    ports:
+      - "3000:3000"
+    depends_on:
+      - auth-service
+      - restaurant-service
+      - menu-inventory-service
+      - order-service
+      - delivery-service
+      - payment-wallet-service
+      - notification-service
+      - admin-reports-service
+
+  auth-service:
+    build:
+      context: ./services/auth-service
+      dockerfile: ../../infra/docker/Dockerfile.service
+    ports:
+      - "3001:3000"
+
+  restaurant-service:
+    build:
+      context: ./services/restaurant-service
+      dockerfile: ../../infra/docker/Dockerfile.service
+    ports:
+      - "3002:3000"
+
+  menu-inventory-service:
+    build:
+      context: ./services/menu-inventory-service
+      dockerfile: ../../infra/docker/Dockerfile.service
+    ports:
+      - "3003:3000"
+
+  order-service:
+    build:
+      context: ./services/order-service
+      dockerfile: ../../infra/docker/Dockerfile.service
+    ports:
+      - "3004:3000"
+
+  delivery-service:
+    build:
+      context: ./services/delivery-service
+      dockerfile: ../../infra/docker/Dockerfile.service
+    ports:
+      - "3005:3000"
+
+  payment-wallet-service:
+    build:
+      context: ./services/payment-wallet-service
+      dockerfile: ../../infra/docker/Dockerfile.service
+    ports:
+      - "3006:3000"
+
+  notification-service:
+    build:
+      context: ./services/notification-service
+      dockerfile: ../../infra/docker/Dockerfile.service
+    ports:
+      - "3007:3000"
+
+  admin-reports-service:
+    build:
+      context: ./services/admin-reports-service
+      dockerfile: ../../infra/docker/Dockerfile.service
+    ports:
+      - "3008:3000"
+
+  owner-dashboard:
+    build:
+      context: ./apps/owner-portal
+      dockerfile: ../../infra/docker/Dockerfile.app
+    ports:
+      - "4000:3000"
+
+  management-portal:
+    build:
+      context: ./apps/management-portal
+      dockerfile: ../../infra/docker/Dockerfile.app
+    ports:
+      - "4001:3000"
+
+  shop-app:
+    build:
+      context: ./apps/shop-web
+      dockerfile: ../../infra/docker/Dockerfile.app
+    ports:
+      - "4002:3000"
+
+  delivery-app:
+    build:
+      context: ./apps/delivery_partner_app
+      dockerfile: ../../infra/docker/Dockerfile.app
+    ports:
+      - "4003:3000"
+
+  user-app:
+    build:
+      context: ./apps/user-web
+      dockerfile: ../../infra/docker/Dockerfile.app
+    ports:
+      - "4004:3000"

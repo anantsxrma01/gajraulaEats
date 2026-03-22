@@ -1,0 +1,30 @@
+{
+  "name": "local-food-delivery-platform",
+  "version": "1.0.0",
+  "private": true,
+  "workspaces": [
+    "apps/*",
+    "backend",
+    "db"
+  ],
+  "scripts": {
+    "dev": "echo \"Define per-app dev scripts later\"",
+    "lint": "echo \"Add linting later\""
+  },
+  "devDependencies": {
+    "@types/react": "^19.2.7",
+    "@types/react-dom": "^19.2.3",
+    "concurrently": "^6.0.0",
+    "lerna": "^4.0.0",
+    "nodemon": "^3.1.11"
+  },
+  "description": "This project is a comprehensive local food delivery system designed to facilitate the ordering and delivery of food within a 30 km radius.",
+  "main": ".eslintrc.js",
+  "directories": {
+    "doc": "docs"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "dependencies": {}
+}

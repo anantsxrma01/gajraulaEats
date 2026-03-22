@@ -1,0 +1,27 @@
+{
+  "name": "contracts",
+  "version": "1.0.0",
+  "description": "Library for contract definitions and types used for inter-service communication.",
+  "main": "src/index.ts",
+  "scripts": {
+    "build": "tsc",
+    "test": "jest"
+  },
+  "dependencies": {},
+  "devDependencies": {
+    "typescript": "^4.0.0",
+    "jest": "^26.0.0",
+    "@types/jest": "^26.0.0"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/yourusername/local-food-delivery-platform.git"
+  },
+  "keywords": [
+    "contracts",
+    "library",
+    "typescript"
+  ],
+  "author": "Your Name",
+  "license": "MIT"
+}

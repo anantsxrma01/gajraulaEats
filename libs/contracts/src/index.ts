@@ -1,0 +1,1 @@
+// This file exports contract definitions and types used for inter-service communication.
