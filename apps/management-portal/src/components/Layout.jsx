@@ -4,11 +4,14 @@ import Sidebar from "./Sidebar";
 
 export default function Layout({ children }) {
   return (
-    <div className="h-screen flex flex-col">
+    <div style={{ height: "100%", display: "flex", flexDirection: "column" }}>
       <Topbar />
-      <div className="flex flex-1">
+      <div style={{ display: "flex", flex: 1, overflow: "hidden" }}>
         <Sidebar />
-        <main className="flex-1 p-4 overflow-auto bg-gray-50">
+        <main style={{
+          flex: 1, overflowY: "auto", padding: 28,
+          background: "transparent"
+        }}>
           {children}
         </main>
       </div>

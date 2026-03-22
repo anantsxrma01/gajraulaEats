@@ -4,7 +4,7 @@ import { useAuth } from "../auth/AuthContext";
 import { useNavigate } from "react-router-dom";
 
 export default function Login() {
-  const [step, setStep] = useState("PHONE"); // PHONE | OTP
+  const [step, setStep] = useState("PHONE");
   const [phone, setPhone] = useState("");
   const [otp, setOtp] = useState("");
   const [loading, setLoading] = useState(false);
@@ -33,12 +33,10 @@ export default function Login() {
     try {
       const res = await api.post("/auth/verify-otp", { phone, otp });
       const { token, user } = res.data;
-
       if (!["OWNER", "MANAGER"].includes(user.role)) {
-        setError("You are not authorized for management portal.");
+        setError("You are not authorized for the management portal.");
         return;
       }
-
       loginWithToken(token, user);
       navigate("/orders", { replace: true });
     } catch (err) {
@@ -48,68 +46,106 @@ export default function Login() {
     }
   };
 
+  const inputStyle = {
+    width: "100%", padding: "11px 16px", borderRadius: 10, fontSize: 14,
+    background: "rgba(255,255,255,0.05)", border: "1px solid rgba(255,255,255,0.1)",
+    color: "#fafafa", outline: "none", transition: "border-color 0.2s"
+  };
+
+  const btnStyle = (disabled) => ({
+    width: "100%", padding: "12px", borderRadius: 10, fontSize: 14, fontWeight: 600,
+    background: disabled ? "rgba(139,92,246,0.3)" : "linear-gradient(135deg, #8b5cf6, #7c3aed)",
+    color: "white", border: "none", cursor: disabled ? "not-allowed" : "pointer",
+    boxShadow: disabled ? "none" : "0 0 24px rgba(139,92,246,0.3)", transition: "all 0.2s"
+  });
+
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gray-50">
-      <div className="w-full max-w-md bg-white rounded-lg shadow p-6">
-        <h1 className="text-xl font-semibold mb-4 text-center">
-          Management Portal Login
-        </h1>
+    <div style={{
+      minHeight: "100vh", display: "flex", alignItems: "center", justifyContent: "center",
+      padding: 20
+    }}>
+      <div className="glass" style={{
+        width: "100%", maxWidth: 400, borderRadius: 20, padding: 36,
+        boxShadow: "0 30px 60px rgba(0,0,0,0.5)"
+      }}>
+        {/* Logo */}
+        <div style={{ textAlign: "center", marginBottom: 28 }}>
+          <div style={{
+            width: 52, height: 52, borderRadius: 16,
+            background: "linear-gradient(135deg, #8b5cf6, #7c3aed)",
+            display: "flex", alignItems: "center", justifyContent: "center",
+            margin: "0 auto 16px", boxShadow: "0 0 30px rgba(139,92,246,0.4)"
+          }}>
+            <svg width="24" height="24" fill="none" viewBox="0 0 24 24" stroke="white" strokeWidth={2}>
+              <path strokeLinecap="round" strokeLinejoin="round"
+                d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" />
+            </svg>
+          </div>
+          <h1 style={{ fontSize: 22, fontWeight: 700, color: "#fafafa", marginBottom: 4 }}>Management Portal</h1>
+          <p style={{ fontSize: 13, color: "#71717a" }}>
+            {step === "PHONE" ? "Enter your admin phone number" : `Code sent to +91 ${phone}`}
+          </p>
+        </div>
 
         {error && (
-          <div className="mb-3 text-sm text-red-600 bg-red-50 p-2 rounded">
+          <div style={{
+            marginBottom: 16, padding: "10px 14px", borderRadius: 10, fontSize: 13,
+            background: "rgba(239,68,68,0.1)", color: "#f87171",
+            border: "1px solid rgba(239,68,68,0.2)"
+          }}>
             {error}
           </div>
         )}
 
-        {step === "PHONE" && (
-          <form onSubmit={handleSendOtp} className="space-y-3">
+        {step === "PHONE" ? (
+          <form onSubmit={handleSendOtp} style={{ display: "flex", flexDirection: "column", gap: 14 }}>
             <div>
-              <label className="block text-sm mb-1">Phone</label>
-              <input
-                type="tel"
-                value={phone}
-                onChange={(e) => setPhone(e.target.value)}
-                className="w-full border rounded px-3 py-2 text-sm"
-                placeholder="Enter admin phone"
-                required
-              />
+              <label style={{ display: "block", fontSize: 12, fontWeight: 500, color: "#a1a1aa", marginBottom: 6 }}>
+                Mobile Number
+              </label>
+              <div style={{ position: "relative" }}>
+                <span style={{
+                  position: "absolute", left: 14, top: "50%", transform: "translateY(-50%)",
+                  fontSize: 14, color: "#71717a", fontWeight: 500
+                }}>+91</span>
+                <input
+                  type="tel"
+                  value={phone}
+                  onChange={(e) => setPhone(e.target.value)}
+                  style={{ ...inputStyle, paddingLeft: 46 }}
+                  placeholder="Enter admin phone"
+                  required
+                />
+              </div>
             </div>
-            <button
-              type="submit"
-              disabled={loading}
-              className="w-full bg-black text-white rounded py-2 text-sm hover:bg-gray-800 disabled:opacity-60"
-            >
-              {loading ? "Sending..." : "Send OTP"}
+            <button type="submit" disabled={loading} style={btnStyle(loading)}>
+              {loading ? "Sending…" : "Send OTP"}
             </button>
           </form>
-        )}
-
-        {step === "OTP" && (
-          <form onSubmit={handleVerifyOtp} className="space-y-3">
+        ) : (
+          <form onSubmit={handleVerifyOtp} style={{ display: "flex", flexDirection: "column", gap: 14 }}>
             <div>
-              <label className="block text-sm mb-1">OTP</label>
+              <label style={{ display: "block", fontSize: 12, fontWeight: 500, color: "#a1a1aa", marginBottom: 6 }}>
+                One-Time Password
+              </label>
               <input
                 type="text"
                 value={otp}
                 onChange={(e) => setOtp(e.target.value)}
-                className="w-full border rounded px-3 py-2 text-sm"
-                placeholder="Enter OTP (dev: 1234)"
+                style={{ ...inputStyle, textAlign: "center", letterSpacing: "0.4em", fontSize: 20, fontWeight: 700 }}
+                placeholder="• • • •"
+                maxLength={6}
                 required
               />
             </div>
-            <button
-              type="submit"
-              disabled={loading}
-              className="w-full bg-black text-white rounded py-2 text-sm hover:bg-gray-800 disabled:opacity-60"
-            >
-              {loading ? "Verifying..." : "Verify & Login"}
+            <button type="submit" disabled={loading} style={btnStyle(loading)}>
+              {loading ? "Verifying…" : "Verify & Login"}
             </button>
-            <button
-              type="button"
-              onClick={() => setStep("PHONE")}
-              className="w-full text-xs text-gray-500 mt-1"
-            >
-              Change phone
+            <button type="button" onClick={() => setStep("PHONE")} style={{
+              background: "none", border: "none", color: "#71717a", fontSize: 12,
+              textAlign: "center", cursor: "pointer"
+            }}>
+              ← Change phone number
             </button>
           </form>
         )}
