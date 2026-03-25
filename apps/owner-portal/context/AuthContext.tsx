@@ -92,29 +92,28 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     }
   };
 
-  // Validate token on page load
-  const validateSession = async () => {
+  // Validate token on page load by decoding JWT locally (no API call needed)
+  const validateSession = () => {
     const token = getToken();
     if (!token) {
       setLoading(false);
       return;
     }
-
     try {
-      // Hit an admin API to ensure token is valid & role is OWNER
-      const res = await apiFetch("/admin/shops?status=PENDING");
-
-      // Optional: You can build `/admin/me` endpoint later
-      // For now, token valid -> use basic info from API if available
-
-      // Example: store token user info manually (you can change it later)
-      setUser({
-        id: "owner",
-        phone: "N/A",
-        role: "OWNER"
-      });
-    } catch (e) {
-      console.error("Session invalid:", e);
+      // Decode JWT payload (base64) — no signature verification needed client-side
+      const payload = JSON.parse(atob(token.split(".")[1]));
+      // Check expiry
+      if (payload.exp * 1000 < Date.now()) {
+        clearToken();
+        setUser(null);
+      } else {
+        setUser({
+          id: payload.userId,
+          phone: payload.phone ?? "N/A",
+          role: payload.role,
+        });
+      }
+    } catch {
       clearToken();
       setUser(null);
     } finally {
