@@ -1,7 +1,7 @@
-// backend/src/controllers/authController.js
-
 const jwt = require("jsonwebtoken");
 const User = require("../models/User");
+const Otp = require("../models/Otp");
+const { createAndSendNotification } = require("../services/notificationService");
 
 const sendOtp = async (req, res) => {
   try {
@@ -11,15 +11,43 @@ const sendOtp = async (req, res) => {
       return res.status(400).json({ message: "Phone is required" });
     }
 
-    // Dev mode OTP
-    const devOtp = "1234";
+    // Generate real OTP or fallback to 1234 if Twilio isn't set
+    let otpCode = "1234";
+    const hasTwilio = process.env.TWILIO_ACCOUNT_SID && process.env.TWILIO_ACCOUNT_SID !== "your_twilio_account_sid";
+    
+    if (hasTwilio) {
+      otpCode = Math.floor(1000 + Math.random() * 9000).toString();
+    }
 
-    return res.json({
-      success: true,
-      phone,
-      otp: devOtp, // dev only, frontend ko production me mat dikhana
-      message: "OTP sent (dev mode). Use 1234."
-    });
+    // Upsert OTP in DB (delete old one if exists, create new)
+    await Otp.deleteMany({ phone });
+    await Otp.create({ phone, otp: otpCode });
+
+    const message = `Your Gajraula Eats login code is: ${otpCode}. Valid for 5 minutes.`;
+
+    try {
+      // Send the SMS
+      await createAndSendNotification({
+        userId: null, 
+        orderId: null,
+        channel: "SMS",
+        type: "AUTH_OTP",
+        title: "Login OTP",
+        message: message,
+        to: phone.startsWith("+") ? phone : `+91${phone}`, // Assume Indian number by default if no +
+        meta: {}
+      });
+
+      return res.json({
+        success: true,
+        phone,
+        message: hasTwilio ? "OTP sent successfully." : "OTP sent (dev mode). Use 1234."
+      });
+    } catch (smsError) {
+      console.error("SMS sending failed:", smsError.message);
+      return res.status(500).json({ message: "Failed to send SMS OTP. Please try again." });
+    }
+
   } catch (err) {
     console.error("sendOtp error:", err);
     res.status(500).json({ message: "Server error" });
@@ -34,10 +62,14 @@ const verifyOtp = async (req, res) => {
       return res.status(400).json({ message: "Phone and OTP required" });
     }
 
-    // Dev mode check
-    if (otp !== "1234") {
-      return res.status(400).json({ message: "Invalid OTP" });
+    // Find the OTP in DB
+    const otpRecord = await Otp.findOne({ phone, otp });
+    if (!otpRecord) {
+      return res.status(400).json({ message: "Invalid or expired OTP" });
     }
+
+    // Delete the OTP to prevent reuse
+    await Otp.deleteOne({ _id: otpRecord._id });
 
     let user;
     try {

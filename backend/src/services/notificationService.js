@@ -3,34 +3,45 @@ const User = require("../models/User");
 const Order = require("../models/Order");   
 const Shop = require("../models/Shop");
 
-// TODO: future me real provider lib import karna
-// const twilio = require("twilio");
+const twilio = require("twilio");
 
 const smsProvider = process.env.SMS_PROVIDER || "TWILIO";
 
 async function sendSMSRaw(to, message) {
   console.log("[SMS] To:", to, "Message:", message);
 
-  // Yaha abhi stub rakho. Future: Twilio/MSG91 integration.
   if (!to) {
     throw new Error("SMS 'to' is empty");
   }
 
-  // Example Twilio flow (commented):
-  /*
-  const client = twilio(
-    process.env.TWILIO_ACCOUNT_SID,
-    process.env.TWILIO_AUTH_TOKEN
-  );
-  const res = await client.messages.create({
-    from: process.env.SMS_FROM_NUMBER,
-    to,
-    body: message
-  });
-  */
+  // Check if Twilio is configured
+  if (
+    process.env.TWILIO_ACCOUNT_SID &&
+    process.env.TWILIO_ACCOUNT_SID !== "your_twilio_account_sid" &&
+    process.env.TWILIO_AUTH_TOKEN &&
+    process.env.TWILIO_AUTH_TOKEN !== "your_twilio_auth_token"
+  ) {
+    try {
+      const client = twilio(
+        process.env.TWILIO_ACCOUNT_SID,
+        process.env.TWILIO_AUTH_TOKEN
+      );
+      const res = await client.messages.create({
+        from: process.env.SMS_FROM_NUMBER,
+        to,
+        body: message
+      });
+      console.log(`[SMS] Twilio message sent successfully (SID: ${res.sid})`);
+      return { provider: smsProvider, id: res.sid };
+    } catch (error) {
+      console.error("[SMS] Twilio failed to send message:", error.message);
+      // Fallback or throw based on preference. Here we just log and throw to let authController handle it.
+      throw new Error("Failed to send SMS via Twilio: " + error.message);
+    }
+  }
 
-  // Simulate success
-  return { provider: smsProvider, id: "dummy-id" };
+  console.log("[SMS] Twilio credentials missing or using placeholders. Simulating success.");
+  return { provider: "DUMMY", id: "dummy-id" };
 }
 
 // Common function: log + (optionally) send
