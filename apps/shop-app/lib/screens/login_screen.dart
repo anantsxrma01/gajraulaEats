@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
+import 'package:shared_preferences/shared_preferences.dart';
 
 const _kApiBase = 'https://gajraulaeats.onrender.com/api';
 
@@ -46,6 +47,12 @@ class _LoginScreenState extends State<LoginScreen> {
         body: jsonEncode({'phone': _phoneCtrl.text.trim(), 'otp': _otpCtrl.text.trim()}),
       );
       if (res.statusCode == 200) {
+        final data = jsonDecode(res.body);
+        final token = data['token'];
+        if (token != null) {
+          final prefs = await SharedPreferences.getInstance();
+          await prefs.setString('authToken', token);
+        }
         if (!mounted) return;
         Navigator.pushReplacementNamed(context, '/dashboard');
       } else {

@@ -1,13 +1,18 @@
 import 'package:flutter/material.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import 'screens/login_screen.dart';
 import 'screens/dashboard_screen.dart';
 
-void main() {
-  runApp(const ShopApp());
+void main() async {
+  WidgetsFlutterBinding.ensureInitialized();
+  final prefs = await SharedPreferences.getInstance();
+  final hasToken = prefs.getString('authToken') != null;
+  runApp(ShopApp(hasToken: hasToken));
 }
 
 class ShopApp extends StatelessWidget {
-  const ShopApp({super.key});
+  final bool hasToken;
+  const ShopApp({super.key, required this.hasToken});
 
   @override
   Widget build(BuildContext context) {
@@ -36,7 +41,7 @@ class ShopApp extends StatelessWidget {
           iconTheme: IconThemeData(color: Colors.white),
         ),
       ),
-      initialRoute: '/login',
+      initialRoute: hasToken ? '/dashboard' : '/login',
       routes: {
         '/login':     (_) => const LoginScreen(),
         '/dashboard': (_) => const DashboardScreen(),

@@ -1,14 +1,19 @@
 import 'package:flutter/material.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import 'screens/login_screen.dart';
 import 'screens/home_screen.dart';
 import 'screens/orders_screen.dart';
 
-void main() {
-  runApp(const GajraulaEatsApp());
+void main() async {
+  WidgetsFlutterBinding.ensureInitialized();
+  final prefs = await SharedPreferences.getInstance();
+  final hasToken = prefs.getString('authToken') != null;
+  runApp(GajraulaEatsApp(hasToken: hasToken));
 }
 
 class GajraulaEatsApp extends StatelessWidget {
-  const GajraulaEatsApp({super.key});
+  final bool hasToken;
+  const GajraulaEatsApp({super.key, required this.hasToken});
 
   @override
   Widget build(BuildContext context) {
@@ -52,7 +57,7 @@ class GajraulaEatsApp extends StatelessWidget {
           hintStyle: const TextStyle(color: Color(0xFF71717A)),
         ),
       ),
-      initialRoute: '/login',
+      initialRoute: hasToken ? '/home' : '/login',
       routes: {
         '/login': (_) => const LoginScreen(),
         '/home':  (_) => const HomeScreen(),
