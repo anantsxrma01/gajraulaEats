@@ -5,7 +5,7 @@ import { apiFetch } from "@/lib/apiClient";
 import { useAuth } from "@/context/AuthContext";
 
 export default function LoginPage() {
-  const { login } = useAuth();
+  const { loginWithOtp } = useAuth();
   const [phone, setPhone] = useState("");
   const [otp, setOtp] = useState("");
   const [step, setStep] = useState("PHONE");
@@ -26,7 +26,7 @@ export default function LoginPage() {
 
   const verifyOtp = async () => {
     try {
-      await login(phone, otp);
+      await loginWithOtp(phone, otp);
       window.location.href = "/dashboard";
     } catch (e: any) {
       setMsg(e.message);
