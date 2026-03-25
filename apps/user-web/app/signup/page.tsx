@@ -173,12 +173,12 @@ export default function SignupPage() {
                   id="otp"
                   value={otp}
                   onChange={(e) => setOtp(e.target.value)}
-                  placeholder="e.g. 1234"
+                  placeholder="e.g. 4829"
                   className="flex h-12 w-full rounded-xl border border-border bg-input/50 px-4 py-2 text-sm ring-offset-background tracking-[0.5em] text-center font-mono placeholder:tracking-normal focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-500 transition-colors"
                   required
                 />
                 <p className="text-xs text-muted-foreground mt-2 text-center">
-                  (In dev mode, the OTP is usually 1234)
+                  (OTP will be sent to your phone)
                 </p>
               </div>
               

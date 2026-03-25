@@ -23,7 +23,7 @@ class _OtpScreenState extends State<OtpScreen> {
     final otp = _otpController.text.trim();
     if (otp.length < 4) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Valid OTP enter करो (dev: 1234)')),
+        const SnackBar(content: Text('Please enter a valid OTP')),
       );
       return;
     }

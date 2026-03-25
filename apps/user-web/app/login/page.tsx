@@ -23,7 +23,7 @@ export default function LoginPage() {
         body: JSON.stringify({ phone }),
       });
       setStep("OTP");
-      setMsg("OTP sent (dev: 1234)");
+      setMsg("OTP sent successfully");
     } catch (e: any) {
       setMsg(e.message || "Error sending OTP");
     } finally {
