@@ -28,9 +28,26 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       setLoading(false);
       return;
     }
-    // simple approach: if token exists, just consider logged in.
-    // advance me backend /auth/me add kar sakte ho.
-    setLoading(false);
+    try {
+      // Decode JWT payload (base64)
+      const payload = JSON.parse(atob(token.split(".")[1]));
+      // Check expiry
+      if (payload.exp * 1000 < Date.now()) {
+        setAuthToken(null);
+        setUser(null);
+      } else {
+        setUser({
+          id: payload.userId,
+          phone: payload.phone ?? "N/A",
+          role: payload.role,
+        });
+      }
+    } catch {
+      setAuthToken(null);
+      setUser(null);
+    } finally {
+      setLoading(false);
+    }
   }, []);
 
   const loginWithOtp = async (phone: string, otp: string) => {
