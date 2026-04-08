@@ -1,5 +1,6 @@
 {
   "compilerOptions": {
+    "ignoreDeprecations": "6.0",
     "target": "es6",
     "module": "commonjs",
     "jsx": "react",
@@ -8,10 +9,7 @@
     "skipLibCheck": true,
     "forceConsistentCasingInFileNames": true,
     "outDir": "./dist",
-    "baseUrl": ".",
-    "paths": {
-      "@/*": ["*"]
-    }
+    "moduleResolution": "node"
   },
   "include": [
     "apps/**/*",
