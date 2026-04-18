@@ -111,9 +111,7 @@ const orderSchema = new mongoose.Schema(
 
 // Indexes for analytics
 orderSchema.index({ createdAt: 1 });
-orderSchema.index({ order_status: 1 });
 orderSchema.index({ createdAt: 1, order_status: 1 }); // compound index
-orderSchema.index({ shop_id: 1 });
 orderSchema.index({ delivery_partner_id: 1 });
 
 module.exports = mongoose.model("Order", orderSchema);
