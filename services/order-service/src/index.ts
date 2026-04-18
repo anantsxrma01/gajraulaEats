@@ -12,15 +12,23 @@ const PORT = process.env.PORT || 3000;
 // Middleware
 app.use(json());
 
+// Mount order controller at root (gateway strips /api/orders prefix)
+app.use('/', orderController);
+
+// Alias for backward compatibility
 app.use('/orders', orderController);
 
-connectDatabase()
-  .then(() => {
+async function startOrderService(): Promise<void> {
+  try {
+    await connectDatabase();
     app.listen(PORT, () => {
-      console.log(`Order Service is running on port ${PORT}`);
+      console.log(`✓ Order Service is running on port ${PORT}`);
     });
-  })
-  .catch((error: unknown) => {
-    console.error('Database connection failed:', error);
-  });
+  } catch (error: unknown) {
+    console.error('Order Service startup failed:', error);
+    process.exit(1);
+  }
+}
+
+startOrderService();
 

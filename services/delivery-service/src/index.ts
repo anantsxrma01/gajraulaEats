@@ -8,6 +8,7 @@ app.use(express.json());
 
 const deliveryService = new DeliveryService();
 
+// Routes at root level (gateway strips /api/delivery prefix)
 app.post('/assign', async (req, res) => {
     const { orderId, deliveryPartnerId } = req.body;
     try {
@@ -27,6 +28,19 @@ app.get('/track/:orderId', async (req, res) => {
         res.status(500).json({ error: error instanceof Error ? error.message : String(error) });
     }
 });
+
+async function startDeliveryService(): Promise<void> {
+  try {
+    app.listen(PORT, () => {
+        console.log(`✓ Delivery Service is running on port ${PORT}`);
+    });
+  } catch (error: any) {
+    console.error('Delivery Service startup failed:', error instanceof Error ? error.message : String(error));
+    process.exit(1);
+  }
+}
+
+startDeliveryService();
 
 app.listen(PORT, () => {
     console.log(`Delivery Service running on port ${PORT}`);

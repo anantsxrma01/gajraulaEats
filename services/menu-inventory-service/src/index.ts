@@ -9,15 +9,19 @@ const PORT = process.env.PORT || 3000;
 
 app.use(json());
 
-connectToDatabase()
-  .then(() => {
-    app.use('/api/menu', menuRoutes);
-    app.use('/api/inventory', inventoryRoutes);
+async function startService(): Promise<void> {
+  try {
+    await connectToDatabase();
+    app.use('/menu', menuRoutes);
+    app.use('/inventory', inventoryRoutes);
 
     app.listen(PORT, () => {
       console.log(`Menu & Inventory Service running on port ${PORT}`);
     });
-  })
-  .catch((error: unknown) => {
-    console.error('Database connection failed:', error);
-  });
+  } catch (error: unknown) {
+    console.error('Service startup failed:', error);
+    process.exit(1);
+  }
+}
+
+startService();

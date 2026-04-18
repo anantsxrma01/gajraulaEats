@@ -34,6 +34,15 @@ app.use((err: any, req: express.Request, res: express.Response, next: express.Ne
   res.status(500).json({ message: 'Internal server error' });
 });
 
-app.listen(PORT, () => {
-    console.log(`✓ Auth Service running on port ${PORT}`);
-});
+async function startAuthService(): Promise<void> {
+  try {
+    app.listen(PORT, () => {
+      console.log(`✓ Auth Service running on port ${PORT}`);
+    });
+  } catch (error: any) {
+    console.error('Auth Service startup failed:', error instanceof Error ? error.message : String(error));
+    process.exit(1);
+  }
+}
+
+startAuthService();

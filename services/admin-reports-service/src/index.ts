@@ -9,7 +9,7 @@ const app = express();
 const PORT = process.env.PORT || 3000;
 
 app.use(express.json());
-app.use('/reports', reportRoutes);
+app.use('/stats', reportRoutes);
 
 async function startServer(): Promise<void> {
   console.log('Starting admin service...');

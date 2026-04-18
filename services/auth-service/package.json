@@ -2,10 +2,14 @@
   "name": "auth-service",
   "version": "1.0.0",
   "description": "Service for handling user authentication and authorization.",
-  "main": "src/index.ts",
+  "main": "dist/index.js",
+  "engines": {
+    "node": ">=18.0.0 <19.0.0"
+  },
   "scripts": {
-    "start": "ts-node src/index.ts",
+    "start": "node dist/index.js",
     "build": "tsc",
+    "dev": "ts-node src/index.ts",
     "test": "jest"
   },
   "dependencies": {
