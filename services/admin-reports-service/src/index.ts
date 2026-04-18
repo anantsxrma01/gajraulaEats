@@ -11,12 +11,21 @@ const PORT = process.env.PORT || 3000;
 app.use(express.json());
 app.use('/reports', reportRoutes);
 
-connectDatabase()
-  .then(() => {
-    app.listen(PORT, () => {
-      console.log(`Admin & Reports Service running on port ${PORT}`);
-    });
-  })
-  .catch((error: any) => {
+async function startServer(): Promise<void> {
+  console.log('Starting admin service...');
+
+  try {
+    await connectDatabase();
+    console.log('Database connected successfully');
+  } catch (error: any) {
     console.error('Database connection failed:', error instanceof Error ? error.message : String(error));
+  }
+
+  app.listen(PORT, () => {
+    console.log(`Server running on ${PORT}`);
   });
+}
+
+startServer().catch((error: any) => {
+  console.error('Startup failed:', error instanceof Error ? error.message : String(error));
+});
