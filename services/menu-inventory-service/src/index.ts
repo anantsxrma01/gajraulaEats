@@ -18,6 +18,6 @@ connectToDatabase()
       console.log(`Menu & Inventory Service running on port ${PORT}`);
     });
   })
-  .catch((error) => {
+  .catch((error: unknown) => {
     console.error('Database connection failed:', error);
   });
