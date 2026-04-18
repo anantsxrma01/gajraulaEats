@@ -34,6 +34,18 @@ app.use(
   createProxyMiddleware({
     target: AUTH_SERVICE_URL,
     changeOrigin: true,
+
+    pathRewrite: {
+      "^/api/auth": "/api/auth",
+    },
+
+    onProxyReq(proxyReq, req, res) {
+      console.log("➡️ Forwarding to:", AUTH_SERVICE_URL + req.url);
+    },
+
+    onError(err, req, res) {
+      console.error("❌ Proxy error:", err.message);
+    },
   })
 );
 
