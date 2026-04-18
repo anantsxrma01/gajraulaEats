@@ -1,34 +1,21 @@
 import express from 'express';
-import bodyParser from 'body-parser';
-import { 
-  createUser, 
-  loginUser, 
-  verifyToken, 
-  sendOtp, 
-  verifyOtp 
-} from './controllers/authController';
-import { authenticate } from './middlewares/authMiddleware';
+import authRoutes from './routes/authRoutes';
 
 const app = express();
 const PORT = process.env.PORT || 3000;
 
-app.use(bodyParser.json());
+app.use(express.json());
+app.use((req, _res, next) => {
+  console.log(`[auth-service] received ${req.method} ${req.originalUrl}`);
+  next();
+});
 
-// Health check endpoint
+app.use('/api/auth', authRoutes);
+
 app.get('/health', (req, res) => {
   res.json({ status: 'healthy', service: 'auth-service' });
 });
 
-// Authentication routes
-app.post('/register', createUser);
-app.post('/login', loginUser);
-app.get('/verify', authenticate, verifyToken);
-
-// OTP routes
-app.post('/send-otp', sendOtp);
-app.post('/verify-otp', verifyOtp);
-
-// Error handling
 app.use((err: any, req: express.Request, res: express.Response, next: express.NextFunction) => {
   console.error('Unhandled error:', err);
   res.status(500).json({ message: 'Internal server error' });

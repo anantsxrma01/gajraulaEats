@@ -8,12 +8,16 @@ const app = express();
 const PORT = process.env.PORT || 3000;
 
 app.use(json());
+app.use((req, _res, next) => {
+  console.log(`[menu-inventory-service] received ${req.method} ${req.originalUrl}`);
+  next();
+});
 
 async function startService(): Promise<void> {
   try {
     await connectToDatabase();
-    app.use('/menu', menuRoutes);
-    app.use('/inventory', inventoryRoutes);
+    app.use('/api/menu', menuRoutes);
+    app.use('/api/inventory', inventoryRoutes);
 
     app.listen(PORT, () => {
       console.log(`Menu & Inventory Service running on port ${PORT}`);

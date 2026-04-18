@@ -1,7 +1,7 @@
 import dotenv from 'dotenv';
 import express from 'express';
 import { json } from 'body-parser';
-import orderController from './controllers/order.controller';
+import orderRoutes from './routes/orderRoutes';
 import { connectDatabase } from './database';
 
 dotenv.config();
@@ -9,14 +9,13 @@ dotenv.config();
 const app = express();
 const PORT = process.env.PORT || 3000;
 
-// Middleware
 app.use(json());
+app.use((req, _res, next) => {
+  console.log(`[order-service] received ${req.method} ${req.originalUrl}`);
+  next();
+});
 
-// Mount order controller at root (gateway strips /api/orders prefix)
-app.use('/', orderController);
-
-// Alias for backward compatibility
-app.use('/orders', orderController);
+app.use('/api/orders', orderRoutes);
 
 async function startOrderService(): Promise<void> {
   try {

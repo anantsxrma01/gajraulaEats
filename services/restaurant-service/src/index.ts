@@ -1,27 +1,21 @@
 import express from 'express';
-import { createRestaurant, getRestaurants, updateRestaurant, deleteRestaurant } from './controllers/restaurantController';
+import restaurantRoutes from './routes/restaurantRoutes';
 
 const app = express();
 const PORT = process.env.PORT || 3000;
 
 app.use(express.json());
+app.use((req, _res, next) => {
+  console.log(`[restaurant-service] received ${req.method} ${req.originalUrl}`);
+  next();
+});
 
-// Routes mounted at root level (gateway strips /api/restaurants prefix)
-app.post('/', createRestaurant);
-app.get('/', getRestaurants);
-app.put('/:id', updateRestaurant);
-app.delete('/:id', deleteRestaurant);
-
-// Alias for backward compatibility
-app.post('/restaurants', createRestaurant);
-app.get('/restaurants', getRestaurants);
-app.put('/restaurants/:id', updateRestaurant);
-app.delete('/restaurants/:id', deleteRestaurant);
+app.use('/api/restaurants', restaurantRoutes);
 
 async function startRestaurantService(): Promise<void> {
   try {
     app.listen(PORT, () => {
-        console.log(`✓ Restaurant Service is running on port ${PORT}`);
+      console.log(`✓ Restaurant Service is running on port ${PORT}`);
     });
   } catch (error: any) {
     console.error('Restaurant Service startup failed:', error instanceof Error ? error.message : String(error));

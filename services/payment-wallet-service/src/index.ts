@@ -9,12 +9,15 @@ const app = express();
 const PORT = process.env.PORT || 3000;
 
 app.use(express.json());
+app.use((req, _res, next) => {
+  console.log(`[payment-service] received ${req.method} ${req.originalUrl}`);
+  next();
+});
 
 async function startService(): Promise<void> {
   try {
     await connectDatabase();
-    // Mount payment routes at root (gateway strips /api/payment via pathRewrite)
-    app.use('/', paymentRoutes);
+    app.use('/api/payment', paymentRoutes);
 
     app.listen(PORT, () => {
       console.log(`Payment & Wallet Service running on port ${PORT}`);

@@ -8,6 +8,11 @@ dotenv.config();
 const app = express();
 const PORT = process.env.PORT || 3000;
 
+app.use((req, _res, next) => {
+  console.log(`[api-gateway] incoming ${req.method} ${req.originalUrl}`);
+  next();
+});
+
 app.use(cors());
 app.use(express.json());
 
@@ -24,8 +29,7 @@ const serviceUrls = {
 
 const proxyOptions = (target: string) => ({
   target,
-  changeOrigin: true,
-  pathRewrite: (path: string) => path.replace(/^\/api\/(auth|restaurants|menu|orders|delivery|payment|notify|admin)/, '')
+  changeOrigin: true
 });
 
 Object.entries(serviceUrls).forEach(([key, url]) => {

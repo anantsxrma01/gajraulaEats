@@ -2,12 +2,16 @@ import { Router, Request, Response } from 'express';
 
 const router = Router();
 
-router.get('/', (req: Request, res: Response) => {
-  res.json({ message: 'Inventory route is working' });
+router.get('/', (_req: Request, res: Response) => {
+  res.json({ message: 'Inventory route is healthy' });
 });
 
-router.post('/', (req: Request, res: Response) => {
-  res.status(201).json({ data: req.body });
+router.get('/items', (_req: Request, res: Response) => {
+  res.json({ message: 'Inventory items list' });
+});
+
+router.post('/items', (req: Request, res: Response) => {
+  res.status(201).json({ message: 'Inventory item created', data: req.body });
 });
 
 export default router;
