@@ -1,58 +1,68 @@
-import express, { Request, Response } from "express";
+import { Router } from "express";
 
-const router = express.Router();
+const router = Router();
 
-/**
- * POST /api/auth/signup
- */
-router.post("/signup", (req: Request, res: Response) => {
+// ------------------
+// SEND OTP
+// ------------------
+router.post("/send-otp", async (req, res) => {
   try {
-    const { firstName, lastName, mobile, email } = req.body;
+    const { mobile } = req.body || {};
 
     if (!mobile) {
-      return res.status(400).json({ message: "Mobile number required" });
+      return res.status(400).json({
+        message: "Mobile number is required",
+      });
     }
 
-    return res.status(200).json({
-      message: "Signup successful",
-      data: { firstName, lastName, mobile, email },
-    });
-  } catch (error) {
-    return res.status(500).json({ message: "Signup failed" });
-  }
-});
+    // Dummy OTP logic (replace later)
+    const otp = "123456";
 
-/**
- * POST /api/auth/send-otp
- */
-router.post("/send-otp", (req: Request, res: Response) => {
-  try {
-    const { mobile } = req.body;
+    console.log(`📲 OTP sent to ${mobile}`);
 
-    if (!mobile) {
-      return res.status(400).json({ message: "Mobile number required" });
-    }
-
-    return res.status(200).json({
+    return res.json({
       message: "OTP sent successfully",
-      otp: "123456", // dummy OTP (replace later with real logic)
+      otp,
     });
-  } catch (error) {
-    return res.status(500).json({ message: "Failed to send OTP" });
+  } catch (err) {
+    console.error("❌ send-otp error:", err);
+
+    return res.status(500).json({
+      message: "Internal server error",
+    });
   }
 });
 
-/**
- * POST /api/auth/login
- */
-router.post("/login", (req: Request, res: Response) => {
+// ------------------
+// VERIFY OTP
+// ------------------
+router.post("/verify-otp", async (req, res) => {
   try {
-    return res.status(200).json({
-      message: "Login successful",
+    const { mobile, otp } = req.body || {};
+
+    if (!mobile || !otp) {
+      return res.status(400).json({
+        message: "Mobile and OTP required",
+      });
+    }
+
+    // Dummy validation
+    if (otp !== "123456") {
+      return res.status(400).json({
+        message: "Invalid OTP",
+      });
+    }
+
+    return res.json({
+      message: "OTP verified successfully",
       token: "dummy-jwt-token",
     });
-  } catch (error) {
-    return res.status(500).json({ message: "Login failed" });
+  } catch (err) {
+    console.error("❌ verify-otp error:", err);
+
+    return res.status(500).json({
+      message: "Internal server error",
+    });
   }
 });
 
