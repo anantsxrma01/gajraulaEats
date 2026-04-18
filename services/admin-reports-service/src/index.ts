@@ -1,20 +1,22 @@
+import dotenv from 'dotenv';
 import express from 'express';
-import { generateReport } from './reportGenerator';
+import reportRoutes from './routes/report.routes';
+import { connectDatabase } from './database';
+
+dotenv.config();
 
 const app = express();
 const PORT = process.env.PORT || 3000;
 
 app.use(express.json());
+app.use('/reports', reportRoutes);
 
-app.get('/reports', async (req, res) => {
-    try {
-        const report = await generateReport();
-        res.status(200).json(report);
-    } catch (error) {
-        res.status(500).json({ message: 'Error generating report', error });
-    }
-});
-
-app.listen(PORT, () => {
-    console.log(`Admin & Reports Service running on port ${PORT}`);
-});
+connectDatabase()
+  .then(() => {
+    app.listen(PORT, () => {
+      console.log(`Admin & Reports Service running on port ${PORT}`);
+    });
+  })
+  .catch((error: any) => {
+    console.error('Database connection failed:', error instanceof Error ? error.message : String(error));
+  });
