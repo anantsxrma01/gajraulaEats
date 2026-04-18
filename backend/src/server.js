@@ -1,104 +1,96 @@
 // backend/src/server.js
 
 require("dotenv").config();
-console.log("ENV at startup:", {
-  PORT: process.env.PORT,
-  MONGODB_URI: process.env.MONGODB_URI,
-  JWT_SECRET: process.env.JWT_SECRET
-});
 
 const express = require("express");
 const cors = require("cors");
 const connectDB = require("./config/db");
 
-// Route modules
-const authRoutes = require("./routes/authRoutes");
-const addressRoutes = require("./routes/addressRoutes");
-const shopRoutes = require("./routes/shopRoutes");
-
-// 👇 नाम बदल दिया: adminShopRouter (ताकि adminShopRoutes का duplicate issue खत्म हो जाए)
-const adminShopRouter = require("./routes/adminShopRoutes");
-
-const menuRoutes = require("./routes/menuRoutes");
-const orderRoutes = require("./routes/orderRoutes");
-const shopOwnerOrderRoutes = require("./routes/shopOwnerOrderRoutes");
-const deliveryPartnerRoutes = require("./routes/deliveryPartnerRoutes");
-const testRoutes = require("./routes/testRoutes");
-const paymentRoutes = require("./routes/paymentRoutes");
-const notificationRoutes = require("./routes/notificationRoutes");
-const adminPayoutRoutes = require("./routes/adminPayoutRoutes");
-const shopEarningRoutes = require("./routes/shopEarningRoutes");
-const partnerEarningRoutes = require("./routes/partnerEarningRoutes");
-const adminStatsRoutes = require("./routes/adminStatsRoutes");
-const orderStreamRoutes = require("./routes/orderStreamRoutes");
-const adminDeliveryPartnerRoutes = require("./routes/adminDeliveryPartnerRoutes");
-const adminSettingsRoutes = require("./routes/adminSettingsRoutes");
-
-const managementOrderRoutes = require("./routes/managementOrderRoutes");
-const ticketRoutes = require("./routes/ticketRoutes");
-const managementTicketRoutes = require("./routes/managementTicketRoutes");
-
 const app = express();
 
-// Global middlewares
+// --------------------
+// MIDDLEWARES
+// --------------------
 app.use(cors());
 app.use(express.json());
 
-// Health check route
+// --------------------
+// HEALTH CHECK
+// --------------------
 app.get("/", (req, res) => {
-  res.json({ status: "OK", message: "FDS Backend running" });
+  res.json({ status: "OK", message: "FDS Backend running 🚀" });
 });
 
 app.get("/api", (req, res) => {
-  res.json({ status: "OK", message: "FDS Backend API is LIVE! Access endpoints via /api/..." });
+  res.json({ status: "OK", message: "API LIVE ✅" });
 });
 
-// (optional debug logs hata sakte ho)
-console.log("authRoutes type:", typeof authRoutes);
-console.log("authRoutes value:", authRoutes);
+// --------------------
+// ROUTES
+// --------------------
+app.use("/api/auth", require("./routes/authRoutes"));
+app.use("/api/addresses", require("./routes/addressRoutes"));
+app.use("/api/shops", require("./routes/shopRoutes"));
 
-// API routes
-app.use("/api/auth", authRoutes);
-app.use("/api/addresses", addressRoutes);
-app.use("/api/shops", shopRoutes);
+app.use("/api/admin/shops", require("./routes/adminShopRoutes"));
 
-// यहाँ भी नया नाम use किया है
-app.use("/api/admin/shops", adminShopRouter);
+app.use("/api/menu", require("./routes/menuRoutes"));
 
-app.use("/api/test", testRoutes);
-app.use("/api/shop-owner/menu", menuRoutes);
+app.use("/api/orders", require("./routes/orderRoutes"));
+app.use("/api/orders/stream", require("./routes/orderStreamRoutes"));
 
-// ❌ तुमने ये दो बार लगाया था, मैं एक ही बार रख रहा हूँ
-app.use("/api/orders", orderRoutes);
+app.use("/api/shop-owner/orders", require("./routes/shopOwnerOrderRoutes"));
 
-// अगर orderStreamRoutes में भी /api/orders base चाहिये,
-// तो अंदर routes में अलग path use करना बेहतर है,
-// लेकिन अभी के लिए ये ठीक चलेगा:
-app.use("/api/orders", orderStreamRoutes);
+app.use("/api/delivery", require("./routes/deliveryPartnerRoutes"));
 
-app.use("/api/shop-owner/orders", shopOwnerOrderRoutes);
-app.use("/api/delivery-partner", deliveryPartnerRoutes);
-app.use("/api/payments", paymentRoutes);
-app.use("/api/notifications", notificationRoutes);
-app.use("/api/admin/payouts", adminPayoutRoutes);
-app.use("/api/shop-owner/earnings", shopEarningRoutes);
-app.use("/api/partner/earnings", partnerEarningRoutes);
-app.use("/api/admin/stats", adminStatsRoutes);
-app.use("/api/admin/delivery-partners", adminDeliveryPartnerRoutes);
-app.use("/api/admin/settings", adminSettingsRoutes);
+app.use("/api/payments", require("./routes/paymentRoutes"));
+app.use("/api/notifications", require("./routes/notificationRoutes"));
 
-app.use("/api/management", managementOrderRoutes);       // /orders, /orders/:id...
-app.use("/api/tickets", ticketRoutes);                   // user tickets
-app.use("/api/management/tickets", managementTicketRoutes);
+app.use("/api/admin/payouts", require("./routes/adminPayoutRoutes"));
+app.use("/api/admin/stats", require("./routes/adminStatsRoutes"));
+app.use("/api/admin/delivery-partners", require("./routes/adminDeliveryPartnerRoutes"));
+app.use("/api/admin/settings", require("./routes/adminSettingsRoutes"));
 
-// Port
-const PORT = process.env.PORT || 5001;
+app.use("/api/shop-owner/earnings", require("./routes/shopEarningRoutes"));
+app.use("/api/partner/earnings", require("./routes/partnerEarningRoutes"));
 
-// DB connect then start server
-console.log("Starting server...");
-console.log("MONGO URI:", process.env.MONGODB_URI);
-connectDB().then(() => {
-  app.listen(PORT, () => {
-    console.log(`Server running on port ${PORT}`);
+app.use("/api/management/orders", require("./routes/managementOrderRoutes"));
+app.use("/api/management/tickets", require("./routes/managementTicketRoutes"));
+app.use("/api/tickets", require("./routes/ticketRoutes"));
+
+// --------------------
+// 404 HANDLER
+// --------------------
+app.use((req, res) => {
+  res.status(404).json({
+    message: "Route not found",
+    path: req.originalUrl,
   });
 });
+
+// --------------------
+// GLOBAL ERROR HANDLER
+// --------------------
+app.use((err, req, res, next) => {
+  console.error("❌ Error:", err.message);
+
+  res.status(500).json({
+    message: "Internal Server Error",
+  });
+});
+
+// --------------------
+// START SERVER
+// --------------------
+const PORT = process.env.PORT || 5000;
+
+connectDB()
+  .then(() => {
+    app.listen(PORT, () => {
+      console.log(`🚀 Server running on port ${PORT}`);
+    });
+  })
+  .catch((err) => {
+    console.error("❌ DB connection failed:", err.message);
+    process.exit(1);
+  });
