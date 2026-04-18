@@ -1,21 +1,22 @@
+import dotenv from 'dotenv';
 import express from 'express';
-import { PaymentController } from './controllers/payment.controller';
-import { WalletController } from './controllers/wallet.controller';
+import { connectDatabase } from './database';
+import paymentRoutes from './routes/payment.routes';
+
+dotenv.config();
 
 const app = express();
 const PORT = process.env.PORT || 3000;
 
 app.use(express.json());
 
-// Payment routes
-app.post('/api/payments', PaymentController.processPayment);
-app.get('/api/payments/:id', PaymentController.getPaymentStatus);
-
-// Wallet routes
-app.post('/api/wallets', WalletController.createWallet);
-app.get('/api/wallets/:userId', WalletController.getWalletBalance);
-app.post('/api/wallets/:userId/recharge', WalletController.rechargeWallet);
-
-app.listen(PORT, () => {
-    console.log(`Payment & Wallet Service running on port ${PORT}`);
-});
+connectDatabase()
+  .then(() => {
+    app.use('/api/payments', paymentRoutes);
+    app.listen(PORT, () => {
+      console.log(`Payment & Wallet Service running on port ${PORT}`);
+    });
+  })
+  .catch((error: any) => {
+    console.error('Database connection failed:', error instanceof Error ? error.message : String(error));
+  });
