@@ -11,8 +11,8 @@ app.post('/notify/push', async (req, res) => {
     try {
         await sendPushNotification(userId, message);
         res.status(200).send({ success: true, message: 'Push notification sent' });
-    } catch (error) {
-        res.status(500).send({ success: false, message: 'Failed to send push notification', error });
+    } catch (error: any) {
+        res.status(500).send({ success: false, message: 'Failed to send push notification', error: error instanceof Error ? error.message : String(error) });
     }
 });
 
@@ -21,8 +21,8 @@ app.post('/notify/sms', async (req, res) => {
     try {
         await sendSMS(phoneNumber, message);
         res.status(200).send({ success: true, message: 'SMS sent' });
-    } catch (error) {
-        res.status(500).send({ success: false, message: 'Failed to send SMS', error });
+    } catch (error: any) {
+        res.status(500).send({ success: false, message: 'Failed to send SMS', error: error instanceof Error ? error.message : String(error) });
     }
 });
 
@@ -31,8 +31,8 @@ app.post('/notify/email', async (req, res) => {
     try {
         await sendEmail(email, subject, message);
         res.status(200).send({ success: true, message: 'Email sent' });
-    } catch (error) {
-        res.status(500).send({ success: false, message: 'Failed to send email', error });
+    } catch (error: any) {
+        res.status(500).send({ success: false, message: 'Failed to send email', error: error instanceof Error ? error.message : String(error) });
     }
 });
 
