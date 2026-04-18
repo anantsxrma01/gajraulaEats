@@ -1,10 +1,10 @@
 import * as admin from 'firebase-admin';
-import * as nodemailer from 'nodemailer';
+import nodemailer from 'nodemailer';
 import twilio from 'twilio';
 
 const twilioClient = twilio(process.env.TWILIO_ACCOUNT_SID, process.env.TWILIO_AUTH_TOKEN);
 
-const emailTransporter = nodemailer.createTransporter({
+const emailTransporter = nodemailer.createTransport({
   service: 'gmail',
   auth: {
     user: process.env.EMAIL_USER,
