@@ -1,0 +1,10 @@
+{
+  "name": "fds-monorepo",
+  "private": true,
+  "version": "1.0.0",
+  "scripts": {
+    "dev": "pnpm --parallel dev",
+    "build": "pnpm --parallel build",
+    "start": "pnpm --parallel start"
+  }
+}
