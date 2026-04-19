@@ -4,6 +4,9 @@ import { useEffect, useState } from "react";
 import Navbar from "@/components/Navbar";
 import HeroSection from "@/components/HeroSection";
 import RestaurantCard from "@/components/RestaurantCard";
+import SectionHeader from "@/components/SectionHeader";
+import EmptyState from "@/components/EmptyState";
+import Loader from "@/components/Loader";
 import Footer from "@/components/Footer";
 import { getNearbyShops } from "@/lib/shopsApi";
 
@@ -77,30 +80,31 @@ export default function Home() {
   return (
     <>
       <Navbar />
-      
-      <main className="min-h-screen">
+
+      <main className="min-h-screen pt-24">
         <HeroSection />
-        
-        <section className="container mx-auto px-6 max-w-7xl py-12">
-          <div className="flex items-end justify-between mb-10">
-            <div>
-              <h2 className="text-3xl font-bold tracking-tight mb-2">Featured Restaurants</h2>
-              <p className="text-muted-foreground">The most popular spots in Gajraula right now.</p>
-            </div>
-            <button className="hidden sm:flex items-center gap-2 text-brand-500 font-medium hover:text-brand-400 transition-colors">
-              View All 
-              <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor" className="w-4 h-4">
-                <path strokeLinecap="round" strokeLinejoin="round" d="M13.5 4.5L21 12m0 0l-7.5 7.5M21 12H3" />
-              </svg>
-            </button>
-          </div>
-          
+
+        <section className="container mx-auto px-4 max-w-6xl py-12">
+          <SectionHeader
+            title="Featured Restaurants"
+            subtitle="Discover top-rated restaurants and fast delivery options near you."
+            actionLabel="Browse all"
+            actionHref="/shops"
+          />
+
           {loading ? (
-             <div className="flex justify-center py-20">
-                <div className="w-12 h-12 border-4 border-brand-500 border-t-transparent rounded-full animate-spin"></div>
-             </div>
+            <div className="flex justify-center py-20">
+              <Loader />
+            </div>
+          ) : restaurants.length === 0 ? (
+            <EmptyState
+              title="No restaurants available"
+              description="Try updating your location or searching for another cuisine to find more options."
+              actionLabel="Explore nearby"
+              actionHref="/shops"
+            />
           ) : (
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 mt-8">
               {restaurants.map((restaurant: any) => (
                 <RestaurantCard
                   key={restaurant.id}
@@ -117,20 +121,34 @@ export default function Home() {
           )}
         </section>
 
-        {/* Categories Section */}
-        <section className="bg-card w-full py-20 mt-12 border-y border-border">
-           <div className="container mx-auto px-6 max-w-7xl">
-              <h2 className="text-3xl font-bold tracking-tight mb-10 text-center">Cuisines you'll love</h2>
-              <div className="flex flex-wrap justify-center gap-4">
-                {["North Indian", "South Indian", "Chinese", "Italian", "Healthy", "Desserts", "Beverages", "Street Food"].map((category) => (
-                  <button key={category} className="px-6 py-3 rounded-full border border-border bg-background hover:bg-brand-500 hover:text-white hover:border-brand-500 transition-all font-medium whitespace-nowrap">
-                    {category}
-                  </button>
-                ))}
-              </div>
-           </div>
-        </section>
+        <section className="bg-card border-t border-border py-16">
+          <div className="container mx-auto px-4 max-w-6xl">
+            <SectionHeader
+              title="Popular Cuisines"
+              subtitle="Browse by food categories that match your cravings."
+            />
 
+            <div className="mt-8 grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4">
+              {[
+                "North Indian",
+                "South Indian",
+                "Chinese",
+                "Italian",
+                "Healthy",
+                "Desserts",
+                "Beverages",
+                "Street Food",
+              ].map((category) => (
+                <button
+                  key={category}
+                  className="rounded-3xl border border-border bg-background/80 px-4 py-3 text-sm font-medium text-foreground hover:border-brand-500 hover:bg-brand-500/10 transition"
+                >
+                  {category}
+                </button>
+              ))}
+            </div>
+          </div>
+        </section>
       </main>
 
       <Footer />
