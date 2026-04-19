@@ -9,7 +9,7 @@ interface Shop {
 }
 
 async function getShops() {
-  const res = await fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL || "https://api-gateway-g6za.onrender.com"}/shops`, {
+  const res = await fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL || "https://backend-8qpa.onrender.com"}/shops`, {
     cache: "no-store",
   });
   if (!res.ok) throw new Error("Failed to fetch shops");

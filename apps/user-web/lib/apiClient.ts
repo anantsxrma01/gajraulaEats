@@ -2,7 +2,7 @@
 
 const API_BASE =
   process.env.NEXT_PUBLIC_API_BASE_URL ||
-  "https://backend-8qpa.onrender.com/api";
+  "https://backend-8qpa.onrender.com";
 
 // ===== Auth Token =====
 export function getAuthToken() {
@@ -101,6 +101,7 @@ async function request(path: string, options: RequestInit = {}) {
 }
 
 // ===== API Wrapper =====
+export const apiFetch = request;
 export const api = {
   get: (path: string) => request(path),
 

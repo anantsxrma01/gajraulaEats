@@ -1,9 +1,6 @@
 import { api } from "./apiClient";
 
-// 📍 Get addresses
-export const getAddresses = () =>
-  api.get("/address");
-
-// ➕ Add address
-export const createAddress = (data: any) =>
-  api.post("/address", data);
+export const getMyAddresses = () => api.get("/addresses");
+export const createAddress = (data: any) => api.post("/addresses", data);
+export const setDefaultAddress = (id: string) =>
+  api.put(`/addresses/${id}/default`, {});

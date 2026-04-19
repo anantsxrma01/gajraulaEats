@@ -31,12 +31,11 @@ async function getMenu(shopId: string) {
   return data.data || data;
 }
 
-export default async function ShopMenuPage({
-  params,
-}: {
-  params: { shopId: string };
-}) {
-  const menu = await getMenu(params.shopId);
+export default async function ShopMenuPage(
+  { params }: { params: Promise<{ shopId: string }> }
+) {
+  const { shopId } = await params;
+  const menu = await getMenu(shopId);
 
   return (
     <ProtectedRoute>
