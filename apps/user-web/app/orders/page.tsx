@@ -3,6 +3,9 @@
 import { useEffect, useState } from "react";
 import { getMyOrders } from "@/lib/ordersApi";
 import ProtectedRoute from "@/components/ProtectedRoute";
+import AppShell from "@/components/AppShell";
+import SectionHeader from "@/components/SectionHeader";
+import EmptyState from "@/components/EmptyState";
 import Loader from "@/components/Loader";
 
 interface Order {

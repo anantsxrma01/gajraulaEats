@@ -12,7 +12,7 @@ export default function AppShell({ children }: AppShellProps) {
   return (
     <div className="min-h-screen flex flex-col pt-24 bg-background text-foreground">
       <Navbar />
-      <main className="flex-grow container mx-auto px-6 max-w-7xl py-8">
+      <main className="flex-grow container mx-auto px-4 max-w-6xl py-12">
         {children}
       </main>
       <Footer />

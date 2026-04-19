@@ -1,5 +1,8 @@
 import { notFound } from "next/navigation";
 import ProtectedRoute from "@/components/ProtectedRoute";
+import AppShell from "@/components/AppShell";
+import SectionHeader from "@/components/SectionHeader";
+import EmptyState from "@/components/EmptyState";
 
 interface MenuItem {
   _id: string;
@@ -39,52 +42,56 @@ export default async function ShopMenuPage(
 
   return (
     <ProtectedRoute>
-      <div className="min-h-screen bg-background text-foreground p-8">
-        <h1 className="text-3xl font-bold mb-8 text-center">Menu</h1>
+      <AppShell>
+        <SectionHeader
+          title="Shop Menu"
+          subtitle="Choose from the most delicious dishes available right now."
+        />
 
         {menu.length === 0 ? (
-          <p className="text-center text-muted-foreground">
-            No menu items available.
-          </p>
+          <EmptyState
+            title="No menu items available"
+            description="This restaurant has no dishes listed yet. Try another shop or come back later."
+            actionLabel="Browse shops"
+            actionHref="/shops"
+          />
         ) : (
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6 max-w-4xl mx-auto">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mt-8">
             {menu.map((item: MenuItem) => (
               <div
                 key={item._id}
-                className="glass-card p-6 rounded-xl shadow-lg"
+                className="glass-card rounded-xl p-6 shadow-lg hover:scale-[1.02] transition"
               >
                 {item.image && (
-                  <img
-                    src={item.image}
-                    alt={item.name}
-                    className="w-full h-32 object-cover rounded-lg mb-4"
-                  />
+                  <div className="mb-4 overflow-hidden rounded-3xl h-44 bg-muted">
+                    <img
+                      src={item.image}
+                      alt={item.name}
+                      className="h-full w-full object-cover"
+                    />
+                  </div>
                 )}
 
-                <h2 className="text-xl font-semibold mb-2">
-                  {item.name}
-                </h2>
+                <h2 className="text-lg font-semibold mb-2">{item.name}</h2>
 
-                <p className="text-muted-foreground mb-4">
+                <p className="text-sm text-muted-foreground mb-4 leading-relaxed">
                   {item.description}
                 </p>
 
-                <p className="text-lg font-bold text-primary">
-                  ₹{item.price}
-                </p>
-
-                {/* TEMP BUTTON */}
-                <button
-                  className="mt-4 w-full bg-primary text-primary-foreground p-3 rounded-lg hover:opacity-90"
-                  disabled
-                >
-                  Add to Cart (Coming Soon)
-                </button>
+                <div className="flex items-center justify-between gap-4 text-sm">
+                  <span className="font-semibold text-foreground">₹{item.price}</span>
+                  <button
+                    className="rounded-lg border border-border px-4 py-2 text-sm text-foreground hover:bg-muted transition"
+                    disabled
+                  >
+                    Add to Cart
+                  </button>
+                </div>
               </div>
             ))}
           </div>
         )}
-      </div>
+      </AppShell>
     </ProtectedRoute>
   );
 }
