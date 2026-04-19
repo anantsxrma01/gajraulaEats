@@ -1,18 +1,9 @@
-import { apiFetch } from "./apiClient";
+import { api } from "./apiClient";
 
-export async function getMyAddresses() {
-  return apiFetch("/addresses");
-}
+// 📍 Get addresses
+export const getAddresses = () =>
+  api.get("/address");
 
-export async function createAddress(payload: any) {
-  return apiFetch("/addresses", {
-    method: "POST",
-    body: JSON.stringify(payload),
-  });
-}
-
-export async function setDefaultAddress(id: string) {
-  return apiFetch(`/addresses/${id}/default`, {
-    method: "PATCH",
-  });
-}
+// ➕ Add address
+export const createAddress = (data: any) =>
+  api.post("/address", data);

@@ -2,9 +2,11 @@
 
 import Link from "next/link";
 import React, { useState, useEffect } from "react";
+import { useAuth } from "@/context/AuthContext";
 
 export default function Navbar() {
   const [scrolled, setScrolled] = useState(false);
+  const { user, logout } = useAuth();
 
   useEffect(() => {
     const handleScroll = () => {
@@ -13,6 +15,10 @@ export default function Navbar() {
     window.addEventListener("scroll", handleScroll);
     return () => window.removeEventListener("scroll", handleScroll);
   }, []);
+
+  const handleLogout = () => {
+    logout();
+  };
 
   return (
     <nav
@@ -72,12 +78,26 @@ export default function Navbar() {
             </span>
           </Link>
 
-          <Link href="/login" className="text-sm font-medium hover:text-brand-500 transition-colors">
-            Log In
-          </Link>
-          <Link href="/signup" className="px-5 py-2.5 bg-brand-600 hover:bg-brand-500 text-white text-sm font-medium rounded-full shadow-lg shadow-brand-500/20 transform transition-all hover:-translate-y-0.5 active:translate-y-0">
-            Sign Up
-          </Link>
+          {user ? (
+            <div className="flex items-center gap-4">
+              <span className="text-sm text-foreground">Welcome, {user.phone || user.name || "User"}</span>
+              <button
+                onClick={handleLogout}
+                className="px-4 py-2 bg-red-600 hover:bg-red-500 text-white text-sm font-medium rounded-full shadow-lg transform transition-all hover:-translate-y-0.5 active:translate-y-0"
+              >
+                Logout
+              </button>
+            </div>
+          ) : (
+            <>
+              <Link href="/login" className="text-sm font-medium hover:text-brand-500 transition-colors">
+                Log In
+              </Link>
+              <Link href="/signup" className="px-5 py-2.5 bg-brand-600 hover:bg-brand-500 text-white text-sm font-medium rounded-full shadow-lg shadow-brand-500/20 transform transition-all hover:-translate-y-0.5 active:translate-y-0">
+                Sign Up
+              </Link>
+            </>
+          )}
         </div>
       </div>
     </nav>

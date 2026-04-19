@@ -1,17 +1,13 @@
-import { apiFetch } from "./apiClient";
+import { api } from "./apiClient";
 
-export async function placeOrder(payload: {
-  shop_id: string;
-  address_id: string;
-  items: { item_id: string; qty: number }[];
-  payment_mode?: "COD" | "ONLINE";
-}) {
-  return apiFetch("/orders", {
-    method: "POST",
-    body: JSON.stringify(payload),
-  });
-}
+// 🧾 Create Order
+export const createOrder = (data: any) =>
+  api.post("/orders", data);
 
-export async function getOrderDetail(id: string) {
-  return apiFetch(`/orders/${id}`);
-}
+// 📦 Get My Orders
+export const getMyOrders = () =>
+  api.get("/orders");
+
+// 🔍 Get Order by ID
+export const getOrderById = (id: string) =>
+  api.get(`/orders/${id}`);

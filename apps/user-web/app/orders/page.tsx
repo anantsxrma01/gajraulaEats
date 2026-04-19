@@ -1,53 +1,83 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import Link from "next/link";
-import AppShell from "@/components/AppShell";
-import { fetchMyOrders } from "@/lib/userOrdersApi";
+import { getMyOrders } from "@/lib/ordersApi";
+import ProtectedRoute from "@/components/ProtectedRoute";
+import Loader from "@/components/Loader";
 
-type OrderListItem = {
-  _id: string;
-  order_number: string;
-  order_status: string;
-  total_amount: number;
+interface Order {
+  id: string;
+  items: any[];
+  total: number;
+  status: string;
   createdAt: string;
-  shop_id?: { name: string };
-};
-
-const statusColorClass: Record<string, string> = {
-  PLACED: "border-yellow-500 text-yellow-700",
-  CONFIRMED: "border-blue-500 text-blue-700",
-  PREPARING: "border-blue-500 text-blue-700",
-  READY_FOR_PICKUP: "border-purple-500 text-purple-700",
-  ASSIGNED: "border-indigo-500 text-indigo-700",
-  PICKED: "border-indigo-500 text-indigo-700",
-  DELIVERED: "border-green-500 text-green-700",
-  CANCELLED: "border-red-500 text-red-700",
-};
+}
 
 export default function OrdersPage() {
-  const [orders, setOrders] = useState<OrderListItem[]>([]);
+  const [orders, setOrders] = useState<Order[]>([]);
   const [loading, setLoading] = useState(true);
-
-  const load = async () => {
-    setLoading(true);
-    try {
-      const data = await fetchMyOrders();
-      setOrders(data.orders || []);
-    } catch (e) {
-      console.error(e);
-    } finally {
-      setLoading(false);
-    }
-  };
+  const [error, setError] = useState("");
 
   useEffect(() => {
-    load();
+    const fetchOrders = async () => {
+      try {
+        const data = await getMyOrders();
+        setOrders(data);
+      } catch (err: any) {
+        setError(err.message || "Failed to load orders");
+      } finally {
+        setLoading(false);
+      }
+    };
+    fetchOrders();
   }, []);
 
+  if (loading) return (
+    <ProtectedRoute>
+      <div className="min-h-screen bg-background text-foreground flex items-center justify-center">
+        <Loader />
+      </div>
+    </ProtectedRoute>
+  );
+  if (error) return (
+    <ProtectedRoute>
+      <div className="min-h-screen bg-background flex items-center justify-center text-red-500">
+        {error}
+      </div>
+    </ProtectedRoute>
+  );
+
   return (
-    <AppShell>
-      <h1 className="text-2xl font-bold mb-4">My Orders</h1>
+    <ProtectedRoute>
+      <div className="min-h-screen bg-background text-foreground p-8">
+        <h1 className="text-3xl font-bold mb-8 text-center">My Orders</h1>
+        {orders.length === 0 ? (
+          <p className="text-center text-muted-foreground">No orders yet.</p>
+        ) : (
+          <div className="space-y-6 max-w-4xl mx-auto">
+            {orders.map((order) => (
+              <div key={order.id} className="glass-card p-6 rounded-xl shadow-lg">
+                <div className="flex justify-between items-center mb-4">
+                  <h2 className="text-xl font-semibold">Order #{order.id}</h2>
+                  <span className={`px-3 py-1 rounded-full text-sm ${
+                    order.status === 'completed' ? 'bg-green-500 text-white' :
+                    order.status === 'pending' ? 'bg-yellow-500 text-black' :
+                    'bg-gray-500 text-white'
+                  }`}>
+                    {order.status}
+                  </span>
+                </div>
+                <p className="text-muted-foreground mb-2">Items: {order.items.length}</p>
+                <p className="text-lg font-bold text-primary">Total: ₹{order.total}</p>
+                <p className="text-sm text-muted-foreground">Ordered on: {new Date(order.createdAt).toLocaleDateString()}</p>
+              </div>
+            ))}
+          </div>
+        )}
+      </div>
+    </ProtectedRoute>
+  );
+}
 
       {loading && <div>Loading...</div>}
 

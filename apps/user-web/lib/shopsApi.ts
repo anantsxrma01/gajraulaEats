@@ -1,13 +1,12 @@
-import { apiFetch } from "./apiClient";
+import { api } from "./apiClient";
 
-export async function getNearbyShops() {
-  return apiFetch("/shops/nearby");
-}
+// 🏪 Get all shops
+export const getShops = () => api.get("/shops");
 
-export async function getShopPublic(id: string) {
-  return apiFetch(`/shops/${id}/public`);
-}
+// 🏪 Get single shop
+export const getShopById = (id: string) =>
+  api.get(`/shops/${id}`);
 
-export async function getShopMenu(id: string) {
-  return apiFetch(`/shops/${id}/menu`);
-}
+// 🍽️ Get menu for a shop
+export const getMenu = (shopId: string) =>
+  api.get(`/menu/${shopId}`);

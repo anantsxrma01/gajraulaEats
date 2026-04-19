@@ -1,9 +1,13 @@
-import { apiFetch } from "./apiClient";
+import { api } from "./apiClient";
 
-export async function fetchMyOrders() {
-  return apiFetch("/orders/my");
-}
+// 📦 Get logged-in user's orders
+export const getUserOrders = () =>
+  api.get("/orders/my");
 
-export async function fetchOrderDetail(id: string) {
-  return apiFetch(`/orders/${id}`);
-}
+// 🔍 Get single order (user context)
+export const getUserOrderById = (id: string) =>
+  api.get(`/orders/${id}`);
+
+// ❌ Cancel order (if supported)
+export const cancelOrder = (id: string) =>
+  api.put(`/orders/${id}/cancel`, {});
