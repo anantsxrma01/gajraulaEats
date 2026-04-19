@@ -2,7 +2,7 @@
 
 const API_BASE =
   process.env.NEXT_PUBLIC_API_BASE_URL ||
-  "https://api-gateway-g6za.onrender.com";
+  "https://backend-8qpa.onrender.com/api";
 
 // ===== Auth Token =====
 export function getAuthToken() {
