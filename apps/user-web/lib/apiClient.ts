@@ -1,6 +1,5 @@
-declare var process: any;
+// 🔥 NO need for declare process
 
-// ✅ Always use backend (not gateway for now)
 const API_BASE =
   process.env.NEXT_PUBLIC_API_BASE_URL ||
   "https://api-gateway-g6za.onrender.com";
@@ -8,7 +7,7 @@ const API_BASE =
 // ===== Auth Token =====
 export function getAuthToken() {
   if (typeof window === "undefined") return null;
-  return localStorage.getItem("token"); // ✅ FIXED
+  return localStorage.getItem("token");
 }
 
 export function setAuthToken(token: string | null) {
@@ -17,27 +16,41 @@ export function setAuthToken(token: string | null) {
   else localStorage.removeItem("token");
 }
 
-// ===== Token Expiry Check =====
-function isTokenExpired(token: string): boolean {
+// ===== Safe JWT Decode (SSR safe) =====
+function decodeToken(token: string) {
   try {
-    const payload = JSON.parse(atob(token.split('.')[1]));
-    const exp = payload.exp * 1000;
-    return Date.now() > exp;
+    const payload = token.split(".")[1];
+
+    // browser vs node safe decode
+    const decoded =
+      typeof window !== "undefined"
+        ? atob(payload)
+        : Buffer.from(payload, "base64").toString("utf-8");
+
+    return JSON.parse(decoded);
   } catch {
-    return true; // malformed, consider expired
+    return null;
   }
 }
 
-// ===== Core Fetch =====
+// ===== Token Expiry =====
+function isTokenExpired(token: string): boolean {
+  const decoded = decodeToken(token);
+  if (!decoded?.exp) return true;
+
+  return Date.now() > decoded.exp * 1000;
+}
+
+// ===== Core Request =====
 async function request(path: string, options: RequestInit = {}) {
   const token = getAuthToken();
 
+  // 🔒 Expiry check
   if (token && isTokenExpired(token)) {
     setAuthToken(null);
-    if (typeof window !== "undefined") {
-      window.location.href = "/login";
-    }
-    throw new Error("Token expired");
+
+    // ❗ DO NOT redirect here
+    throw new Error("AUTH_EXPIRED");
   }
 
   const headers: any = {
@@ -51,37 +64,43 @@ async function request(path: string, options: RequestInit = {}) {
 
   const url = `${API_BASE}${path}`;
 
-  console.log("API:", url);
-
-  const res = await fetch(url, {
-    ...options,
-    headers,
-    cache: "no-store",
-  });
-
-  const text = await res.text();
-
-  let data;
   try {
-    data = JSON.parse(text);
-  } catch {
-    throw new Error(`Invalid JSON: ${text}`);
-  }
+    const res = await fetch(url, {
+      ...options,
+      headers,
+      cache: "no-store",
+    });
 
-  if (!res.ok) {
-    if (res.status === 401) {
-      setAuthToken(null); // Clear invalid token
-      if (typeof window !== "undefined") {
-        window.location.href = "/login";
-      }
+    const text = await res.text();
+
+    let data;
+    try {
+      data = JSON.parse(text);
+    } catch {
+      throw new Error("INVALID_JSON");
     }
-    throw new Error(data.message || `Error ${res.status}`);
-  }
 
-  return data;
+    if (!res.ok) {
+      if (res.status === 401) {
+        setAuthToken(null);
+        throw new Error("UNAUTHORIZED");
+      }
+
+      throw new Error(data.message || "API_ERROR");
+    }
+
+    return data;
+  } catch (err: any) {
+    // 🌐 Network error
+    if (err.message === "Failed to fetch") {
+      throw new Error("NETWORK_ERROR");
+    }
+
+    throw err;
+  }
 }
 
-// ===== Helper Methods =====
+// ===== API Wrapper =====
 export const api = {
   get: (path: string) => request(path),
 
