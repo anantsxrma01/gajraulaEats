@@ -1,11 +1,8 @@
 @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
 
-@tailwind base;
-@tailwind components;
-@tailwind utilities;
+@import "tailwindcss";
 
-/* 🔥 Tailwind needs these mapped */
-:root {
+@theme {
   --font-sans: 'Inter', sans-serif;
 
   --color-background: #09090b;
@@ -13,9 +10,14 @@
   --color-card: #18181b;
   --color-border: #27272a;
   --color-primary: #e11d48;
+  --color-brand-400: #f43f5e;
+  --color-brand-500: #e11d48;
+  --color-brand-600: #be123c;
+  --color-input: #27272a;
+  --color-muted: #27272a;
+  --color-muted-foreground: #a1a1aa;
 }
 
-/* ✅ FIX: map variables to Tailwind */
 @layer base {
   html {
     font-family: var(--font-sans);
@@ -29,10 +31,6 @@
       rgba(225, 29, 72, 0.05) 0%,
       transparent 40%
     );
-  }
-
-  * {
-    border-color: var(--color-border);
   }
 }
 
