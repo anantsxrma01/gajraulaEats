@@ -1,4 +1,7 @@
+"use client";
+
 import React from "react";
+import { motion } from "framer-motion";
 
 export default function HeroSection() {
   return (
@@ -6,7 +9,12 @@ export default function HeroSection() {
       {/* Background decorations */}
       <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[800px] h-[800px] bg-brand-500/10 rounded-full blur-[100px] -z-10 animate-pulse"></div>
       
-      <div className="container mx-auto px-6 max-w-7xl relative z-10">
+      <motion.div 
+        initial={{ opacity: 0, y: 30 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.8, ease: "easeOut" }}
+        className="container mx-auto px-6 max-w-7xl relative z-10"
+      >
         <div className="max-w-3xl mx-auto text-center">
           <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full glass border-brand-500/20 text-brand-500 text-sm font-medium mb-8">
             <span className="relative flex h-2 w-2">
@@ -41,9 +49,13 @@ export default function HeroSection() {
                 placeholder="Enter your delivery address..." 
                 className="flex-grow bg-transparent border-none py-3 px-2 text-foreground focus:outline-none focus:ring-0 placeholder:text-muted-foreground"
               />
-              <button className="bg-brand-600 hover:bg-brand-500 text-white px-8 py-3 rounded-full font-medium transition-colors shadow-lg">
+              <motion.button 
+                whileHover={{ scale: 1.05 }}
+                whileTap={{ scale: 0.95 }}
+                className="bg-brand-600 hover:bg-brand-500 text-white px-8 py-3 rounded-full font-medium transition-colors shadow-lg active:opacity-80"
+              >
                 Find Food
-              </button>
+              </motion.button>
             </div>
           </div>
 
@@ -58,7 +70,7 @@ export default function HeroSection() {
             </div>
           </div>
         </div>
-      </div>
+      </motion.div>
     </section>
   );
 }

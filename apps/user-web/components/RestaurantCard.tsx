@@ -1,4 +1,7 @@
+"use client";
+
 import Link from "next/link";
+import { motion } from "framer-motion";
 
 interface RestaurantCardProps {
   id: string;
@@ -15,14 +18,20 @@ export default function RestaurantCard({
   id, name, image, rating, tags, deliveryTime, deliveryFee
 }: RestaurantCardProps) {
   return (
-    <Link
-      href={`/restaurants/${id}`}
-      className="group flex flex-col glass-card rounded-3xl overflow-hidden hover:border-brand-500/30 transition-all duration-300 hover:shadow-2xl hover:shadow-brand-500/10 hover:-translate-y-1 block"
-    >
+    <Link href={`/restaurants/${id}`} className="block h-full">
+      <motion.div
+        whileHover={{ scale: 1.03 }}
+        whileTap={{ scale: 0.97 }}
+        transition={{ type: "spring", stiffness: 300, damping: 20 }}
+        className="group flex flex-col glass-card bg-white/5 backdrop-blur-xl border border-white/10 rounded-3xl overflow-hidden hover:border-brand-500/50 transition-colors duration-300 hover:shadow-[0_0_25px_rgba(239,68,68,0.2)] h-full"
+      >
       <div className="relative h-48 w-full overflow-hidden bg-muted">
         {/* Placeholder image representation via CSS if no external URL is available */}
-        <div
-          className="absolute inset-0 bg-cover bg-center transform group-hover:scale-105 transition-transform duration-500"
+        <motion.div
+          initial={{ opacity: 0, scale: 1.05 }}
+          animate={{ opacity: 1, scale: 1 }}
+          transition={{ duration: 0.5, ease: "easeOut" }}
+          className="absolute inset-0 bg-cover bg-center transform group-hover:scale-110 transition-transform duration-500"
           style={{ backgroundImage: `url(${image})` }}
         />
         <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent opacity-80" />
@@ -59,6 +68,7 @@ export default function RestaurantCard({
           </div>
         </div>
       </div>
+      </motion.div>
     </Link>
   );
 }

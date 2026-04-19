@@ -1,3 +1,7 @@
+"use client";
+
+import { motion } from "framer-motion";
+
 interface SectionHeaderProps {
   title: string;
   subtitle: string;
@@ -12,7 +16,13 @@ export default function SectionHeader({
   actionHref,
 }: SectionHeaderProps) {
   return (
-    <div className="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
+    <motion.div 
+      initial={{ opacity: 0, y: 40 }}
+      whileInView={{ opacity: 1, y: 0 }}
+      viewport={{ once: true, margin: "-50px" }}
+      transition={{ duration: 0.6, ease: "easeOut" }}
+      className="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between"
+    >
       <div>
         <p className="text-sm font-semibold uppercase tracking-[0.2em] text-brand-500">Explore</p>
         <h2 className="mt-2 text-3xl font-semibold tracking-tight text-foreground sm:text-4xl">
@@ -29,6 +39,6 @@ export default function SectionHeader({
           {actionLabel}
         </a>
       ) : null}
-    </div>
+    </motion.div>
   );
 }

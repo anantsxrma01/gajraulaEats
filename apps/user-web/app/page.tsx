@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { motion } from "framer-motion";
 import Navbar from "@/components/Navbar";
 import HeroSection from "@/components/HeroSection";
 import RestaurantCard from "@/components/RestaurantCard";
@@ -9,6 +10,21 @@ import EmptyState from "@/components/EmptyState";
 import Loader from "@/components/Loader";
 import Footer from "@/components/Footer";
 import { getNearbyShops } from "@/lib/shopsApi";
+
+const containerVariants = {
+  hidden: { opacity: 0 },
+  show: {
+    opacity: 1,
+    transition: {
+      staggerChildren: 0.08
+    }
+  }
+};
+
+const itemVariants = {
+  hidden: { opacity: 0, y: 20 },
+  show: { opacity: 1, y: 0, transition: { type: "spring" as const, stiffness: 300, damping: 24 } }
+};
 
 // Fallback Mock Data in case backend is down or empty
 const FALLBACK_RESTAURANTS = [
@@ -93,8 +109,8 @@ export default function Home() {
           />
 
           {loading ? (
-            <div className="flex justify-center py-20">
-              <Loader />
+            <div className="py-10">
+              <Loader count={6} />
             </div>
           ) : restaurants.length === 0 ? (
             <EmptyState
@@ -104,20 +120,26 @@ export default function Home() {
               actionHref="/shops"
             />
           ) : (
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 mt-8">
+            <motion.div 
+              variants={containerVariants}
+              initial="hidden"
+              animate="show"
+              className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 mt-8"
+            >
               {restaurants.map((restaurant: any) => (
-                <RestaurantCard
-                  key={restaurant.id}
-                  id={restaurant.id}
-                  name={restaurant.name}
-                  image={restaurant.image}
-                  rating={restaurant.rating}
-                  tags={restaurant.tags}
-                  deliveryTime={restaurant.deliveryTime}
-                  deliveryFee={restaurant.deliveryFee}
-                />
+                <motion.div key={restaurant.id} variants={itemVariants}>
+                  <RestaurantCard
+                    id={restaurant.id}
+                    name={restaurant.name}
+                    image={restaurant.image}
+                    rating={restaurant.rating}
+                    tags={restaurant.tags}
+                    deliveryTime={restaurant.deliveryTime}
+                    deliveryFee={restaurant.deliveryFee}
+                  />
+                </motion.div>
               ))}
-            </div>
+            </motion.div>
           )}
         </section>
 
@@ -139,12 +161,14 @@ export default function Home() {
                 "Beverages",
                 "Street Food",
               ].map((category) => (
-                <button
+                <motion.button
+                  whileHover={{ scale: 1.05 }}
+                  whileTap={{ scale: 0.95 }}
                   key={category}
-                  className="rounded-3xl border border-border bg-background/80 px-4 py-3 text-sm font-medium text-foreground hover:border-brand-500 hover:bg-brand-500/10 transition"
+                  className="rounded-2xl border border-border bg-background/80 px-4 py-3 text-sm font-medium text-foreground hover:border-brand-500 hover:bg-brand-500/10 transition shadow-sm active:opacity-80"
                 >
                   {category}
-                </button>
+                </motion.button>
               ))}
             </div>
           </div>

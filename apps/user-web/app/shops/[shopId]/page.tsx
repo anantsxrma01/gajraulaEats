@@ -3,6 +3,7 @@ import ProtectedRoute from "@/components/ProtectedRoute";
 import AppShell from "@/components/AppShell";
 import SectionHeader from "@/components/SectionHeader";
 import EmptyState from "@/components/EmptyState";
+import AddToCartButton from "@/components/AddToCartButton";
 
 interface MenuItem {
   _id: string;
@@ -78,14 +79,9 @@ export default async function ShopMenuPage(
                   {item.description}
                 </p>
 
-                <div className="flex items-center justify-between gap-4 text-sm">
-                  <span className="font-semibold text-foreground">₹{item.price}</span>
-                  <button
-                    className="rounded-lg border border-border px-4 py-2 text-sm text-foreground hover:bg-muted transition"
-                    disabled
-                  >
-                    Add to Cart
-                  </button>
+                <div className="flex items-center justify-between gap-4 mt-auto pt-4 border-t border-border/50">
+                  <span className="font-bold tracking-tight text-foreground text-lg">₹{item.price}</span>
+                  <AddToCartButton item={item} disabled={false} />
                 </div>
               </div>
             ))}
