@@ -1,5 +1,4 @@
-declare var process: any;
-const API_BASE = process.env.NEXT_PUBLIC_API_BASE_URL || "http://localhost:5000/api";
+const API_BASE = process.env.NEXT_PUBLIC_API_BASE_URL || "https://backend-8qpa.onrender.com/api";
 
 export function getAuthToken() {
   if (typeof window === "undefined") return null;
@@ -18,10 +17,22 @@ export async function apiFetch(path: string, options: RequestInit = {}) {
     headers["Authorization"] = `Bearer ${token}`;
   }
 
-  const res = await fetch(`${API_BASE}${path}`, {
+  // Ensure default cache policy is no-store
+  const fetchOptions = {
+    cache: "no-store" as RequestCache,
     ...options,
     headers,
-  });
+  };
+
+  const res = await fetch(`${API_BASE}${path}`, fetchOptions);
+
+  if (res.status === 401) {
+    if (typeof window !== "undefined") {
+      localStorage.removeItem("authToken");
+      window.location.href = "/login";
+    }
+    throw new Error("Unauthorized");
+  }
 
   if (!res.ok) {
     const data = await res.json().catch(() => ({}));
@@ -30,3 +41,12 @@ export async function apiFetch(path: string, options: RequestInit = {}) {
 
   return res.json();
 }
+
+export const api = {
+  get: (path: string, options?: RequestInit) => apiFetch(path, { ...options, method: "GET" }),
+  post: (path: string, body?: any, options?: RequestInit) =>
+    apiFetch(path, { ...options, method: "POST", body: body ? JSON.stringify(body) : undefined }),
+  patch: (path: string, body?: any, options?: RequestInit) =>
+    apiFetch(path, { ...options, method: "PATCH", body: body ? JSON.stringify(body) : undefined }),
+  delete: (path: string, options?: RequestInit) => apiFetch(path, { ...options, method: "DELETE" }),
+};

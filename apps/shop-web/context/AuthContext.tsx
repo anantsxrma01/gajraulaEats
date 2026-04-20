@@ -1,7 +1,7 @@
 "use client";
 
 import React, { createContext, useContext, useEffect, useState } from "react";
-import { apiFetch, getAuthToken } from "@/lib/apiClient";
+import { api, getAuthToken } from "@/lib/apiClient";
 
 type UserInfo = {
   id: string;
@@ -18,45 +18,71 @@ type AuthContextType = {
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
+function decodeJwt(token: string) {
+  try {
+    const base64Url = token.split(".")[1];
+    const base64 = base64Url.replace(/-/g, "+").replace(/_/g, "/");
+    const jsonPayload = decodeURIComponent(
+      atob(base64)
+        .split("")
+        .map(function (c) {
+          return "%" + ("00" + c.charCodeAt(0).toString(16)).slice(-2);
+        })
+        .join("")
+    );
+    return JSON.parse(jsonPayload);
+  } catch (e) {
+    return null;
+  }
+}
+
 export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   const [user, setUser] = useState<UserInfo>(null);
   const [loading, setLoading] = useState(true);
 
-  // Optional: /auth/me endpoint हो तो बेहतर, अभी simple logic रखते हैं
   useEffect(() => {
-    const token = getAuthToken();
-    if (!token) {
+    const initAuth = () => {
+      const token = getAuthToken();
+      if (!token) {
+        setLoading(false);
+        return;
+      }
+
+      const decoded = decodeJwt(token);
+      if (decoded && decoded.id) {
+        setUser({
+          id: decoded.id,
+          phone: decoded.phone || "",
+          role: decoded.role || "",
+        });
+      } else {
+        localStorage.removeItem("authToken");
+      }
       setLoading(false);
-      return;
-    }
-    // अभी के लिए सिर्फ token होने पर मान लेते हैं logged in,
-    // आगे चलकर /shops/my call से validate करेंगे
-    setLoading(false);
+    };
+
+    initAuth();
   }, []);
 
   const login = async (phone: string, otp: string) => {
-    const data = await apiFetch("/auth/verify-otp", {
-      method: "POST",
-      body: JSON.stringify({ phone, otp }),
-    });
+    const data = await api.post("/auth/verify-otp", { phone, otp });
 
-    if (typeof window !== "undefined") {
+    if (typeof window !== "undefined" && data.token) {
       localStorage.setItem("authToken", data.token);
+      setUser({
+        id: data.user.id,
+        phone: data.user.phone,
+        role: data.user.role,
+      });
     }
-
-    setUser({
-      id: data.user.id,
-      phone: data.user.phone,
-      role: data.user.role,
-    });
   };
 
   const logout = () => {
     if (typeof window !== "undefined") {
       localStorage.removeItem("authToken");
+      window.location.href = "/login";
     }
     setUser(null);
-    window.location.href = "/login";
   };
 
   return (

@@ -1,13 +1,10 @@
-import { apiFetch } from "./apiClient";
+import { api } from "./apiClient";
 
 export async function fetchShopOrders(status?: string) {
   const query = status ? `?status=${status}` : "";
-  return apiFetch(`/shop-owner/orders${query}`);
+  return api.get(`/shop-owner/orders${query}`);
 }
 
 export async function updateOrderStatus(id: string, new_status: string, cancellation_reason?: string) {
-  return apiFetch(`/shop-owner/orders/${id}/status`, {
-    method: "PATCH",
-    body: JSON.stringify({ new_status, cancellation_reason }),
-  });
+  return api.patch(`/shop-owner/orders/${id}/status`, { new_status, cancellation_reason });
 }

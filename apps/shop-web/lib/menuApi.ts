@@ -1,49 +1,33 @@
-import { apiFetch } from "./apiClient";
+import { api } from "./apiClient";
 
 export async function fetchCategories() {
-  return apiFetch("/shop-owner/menu/categories");
+  return api.get("/shop-owner/menu/categories");
 }
 
 export async function createCategory(payload: { name: string; sort_order?: number }) {
-  return apiFetch("/shop-owner/menu/categories", {
-    method: "POST",
-    body: JSON.stringify(payload),
-  });
+  return api.post("/shop-owner/menu/categories", payload);
 }
 
 export async function updateCategory(id: string, payload: any) {
-  return apiFetch(`/shop-owner/menu/categories/${id}`, {
-    method: "PATCH",
-    body: JSON.stringify(payload),
-  });
+  return api.patch(`/shop-owner/menu/categories/${id}`, payload);
 }
 
 export async function deleteCategory(id: string) {
-  return apiFetch(`/shop-owner/menu/categories/${id}`, {
-    method: "DELETE",
-  });
+  return api.delete(`/shop-owner/menu/categories/${id}`);
 }
 
 export async function fetchItems() {
-  return apiFetch("/shop-owner/menu/items");
+  return api.get("/shop-owner/menu/items");
 }
 
 export async function createItem(payload: any) {
-  return apiFetch("/shop-owner/menu/items", {
-    method: "POST",
-    body: JSON.stringify(payload),
-  });
+  return api.post("/shop-owner/menu/items", payload);
 }
 
 export async function updateItem(id: string, payload: any) {
-  return apiFetch(`/shop-owner/menu/items/${id}`, {
-    method: "PATCH",
-    body: JSON.stringify(payload),
-  });
+  return api.patch(`/shop-owner/menu/items/${id}`, payload);
 }
 
 export async function deleteItem(id: string) {
-  return apiFetch(`/shop-owner/menu/items/${id}`, {
-    method: "DELETE",
-  });
+  return api.delete(`/shop-owner/menu/items/${id}`);
 }
