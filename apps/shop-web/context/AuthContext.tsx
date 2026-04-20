@@ -9,6 +9,7 @@ export type UserInfo = {
   id?: string;
   phone: string;
   role: string;
+  approvalStatus?: "PENDING" | "APPROVED" | "REJECTED";
 } | null;
 
 export type ShopInfo = {

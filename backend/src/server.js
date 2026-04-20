@@ -56,6 +56,7 @@ app.use("/api/partner/earnings", require("./routes/partnerEarningRoutes"));
 
 app.use("/api/management/orders", require("./routes/managementOrderRoutes"));
 app.use("/api/management/tickets", require("./routes/managementTicketRoutes"));
+app.use("/api/management/approve", require("./routes/managementApprovalRoutes"));
 app.use("/api/tickets", require("./routes/ticketRoutes"));
 
 // --------------------

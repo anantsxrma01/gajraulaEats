@@ -1,7 +1,8 @@
-
-
 const jwt = require("jsonwebtoken");
 const User = require("../models/User");
+
+// ─── auth ─────────────────────────────────────────────────────────────────────
+// Validates JWT, loads user, populates req.user
 
 const auth = async (req, res, next) => {
   try {
@@ -23,9 +24,10 @@ const auth = async (req, res, next) => {
     }
 
     req.user = {
-      id: user.id,
+      id: user._id.toString(),
       role: user.role,
       phone: user.phone,
+      approvalStatus: user.approvalStatus,
     };
 
     next();
@@ -35,24 +37,55 @@ const auth = async (req, res, next) => {
   }
 };
 
+// ─── allowRoles ───────────────────────────────────────────────────────────────
+// Usage: allowRoles("OWNER", "MANAGER")
+
 const allowRoles = (...allowedRoles) => {
   return (req, res, next) => {
     if (!req.user || !allowedRoles.includes(req.user.role)) {
-      return res.status(403).json({ message: "Forbidden: insufficient role" });
+      return res.status(403).json({
+        message: `Forbidden: role '${req.user?.role}' is not allowed here.`,
+        allowed: allowedRoles,
+      });
     }
     next();
   };
 };
 
+// ─── allowAdmin ───────────────────────────────────────────────────────────────
+// Legacy: keeps compatibility with existing routes that use allowAdmin
+
 function allowAdmin(req, res, next) {
-  if (req.user.role !== "OWNER") {
+  if (!req.user || req.user.role !== "OWNER") {
     return res.status(403).json({ message: "Access restricted to platform owner" });
   }
   next();
 }
 
+// ─── requireApproved ─────────────────────────────────────────────────────────
+// Must come AFTER auth + allowRoles.
+// Blocks SHOP_OWNER / DELIVERY_PARTNER / MANAGER who are not yet APPROVED.
+
+const GATED_ROLES = ["SHOP_OWNER", "DELIVERY_PARTNER", "MANAGER"];
+
+const requireApproved = (req, res, next) => {
+  if (!req.user) {
+    return res.status(401).json({ message: "Unauthorized" });
+  }
+
+  if (GATED_ROLES.includes(req.user.role) && req.user.approvalStatus !== "APPROVED") {
+    return res.status(403).json({
+      message: "Your account is pending approval.",
+      approvalStatus: req.user.approvalStatus,   // "PENDING" | "REJECTED"
+    });
+  }
+
+  next();
+};
+
 module.exports = {
   auth,
   allowRoles,
   allowAdmin,
+  requireApproved,
 };
