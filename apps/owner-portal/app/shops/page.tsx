@@ -6,11 +6,12 @@ import { getShops, approveShop, rejectShop, suspendShop } from "@/lib/apiAdmin";
 import { Button } from "@/components/ui/Button";
 import { Loader } from "@/components/ui/Loader";
 import { motion, AnimatePresence } from "framer-motion";
-import { Store, CheckCircle, XCircle, AlertTriangle, Phone, MapPin } from "lucide-react";
+import { Store as StoreIcon, CheckCircle, XCircle, AlertTriangle, Phone, MapPin } from "lucide-react";
+import type { Store } from "@/types/store";
 import toast from "react-hot-toast";
 
 export default function ShopApprovalPage() {
-  const [shops, setShops] = useState([]);
+  const [shops, setShops] = useState<Store[]>([]);
   const [statusFilter, setStatusFilter] = useState("PENDING");
   const [loading, setLoading] = useState(true);
 
@@ -70,7 +71,7 @@ export default function ShopApprovalPage() {
       <div className="flex flex-col gap-6">
         <div>
           <h1 className="text-2xl lg:text-3xl font-bold tracking-tight text-white flex items-center gap-2">
-            <Store className="w-8 h-8 text-amber-500" />
+            <StoreIcon className="w-8 h-8 text-amber-500" />
             Shop Directory
           </h1>
           <p className="text-zinc-400 mt-1">Review onboarding applications and manage active restaurants.</p>
@@ -103,7 +104,7 @@ export default function ShopApprovalPage() {
         ) : shops.length === 0 ? (
           <div className="glass rounded-3xl p-12 text-center flex flex-col items-center">
             <div className="w-20 h-20 bg-white/5 rounded-full flex items-center justify-center mb-4">
-              <Store className="w-10 h-10 text-zinc-500" />
+              <StoreIcon className="w-10 h-10 text-zinc-500" />
             </div>
             <h3 className="text-xl font-bold text-white mb-2">No Shops Found</h3>
             <p className="text-zinc-400">There are no shops currently in the {statusFilter} state.</p>
@@ -115,7 +116,7 @@ export default function ShopApprovalPage() {
             className="grid grid-cols-1 lg:grid-cols-2 gap-4"
           >
             <AnimatePresence>
-              {shops.map((shop: any, i) => (
+              {shops.map((shop: Store, i) => (
                 <motion.div
                   key={shop._id}
                   initial={{ opacity: 0, y: 20 }}
