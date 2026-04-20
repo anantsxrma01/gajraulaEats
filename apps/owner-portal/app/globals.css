@@ -13,20 +13,22 @@
 .glass {
   background-color: rgba(0, 0, 0, 0.4);
   border: 1px solid rgba(255, 255, 255, 0.1);
-  @apply backdrop-blur-xl;
+  backdrop-filter: blur(24px);
+  -webkit-backdrop-filter: blur(24px);
 }
 
 .glass-sidebar {
   background-color: rgba(0, 0, 0, 0.6);
   border-right: 1px solid rgba(255, 255, 255, 0.05);
-  @apply backdrop-blur-2xl;
+  backdrop-filter: blur(40px);
+  -webkit-backdrop-filter: blur(40px);
 }
 
 .glass-nav-active {
   background-color: rgba(251, 191, 36, 0.2);
   border: 1px solid rgba(251, 191, 36, 0.3);
   box-shadow: 0 0 15px rgba(251, 191, 36, 0.2);
-  @apply text-amber-500;
+  color: #f59e0b; /* text-amber-500 equivalent */
 }
 
 .custom-scrollbar::-webkit-scrollbar {
