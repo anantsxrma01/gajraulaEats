@@ -91,7 +91,8 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
    * Verifies OTP, persists auth state, and returns the route to navigate to.
    */
   const loginWithOtp = async (phone: string, otp: string): Promise<string> => {
-    const data = await api.post("/auth/verify-otp", { phone, otp });
+    // Always declare this is a SHOP_OWNER login — backend uses this on first signup
+    const data = await api.post("/auth/verify-otp", { phone, otp, role: "SHOP_OWNER" });
 
     if (!data.token) throw new Error("No token received from server.");
 

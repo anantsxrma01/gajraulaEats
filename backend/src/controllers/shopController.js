@@ -157,10 +157,10 @@ const adminUpdateShopStatus = async (req, res) => {
     const { id } = req.params;
     const { status, rejection_reason } = req.body; // status: "APPROVED" or "REJECTED"
 
-    if (!["APPROVED", "REJECTED"].includes(status)) {
+    if (!["APPROVED", "REJECTED", "SUSPENDED"].includes(status)) {
       return res
         .status(400)
-        .json({ message: "Status must be APPROVED or REJECTED" });
+        .json({ message: "Status must be APPROVED, REJECTED, or SUSPENDED" });
     }
 
     const shop = await Shop.findById(id);
@@ -170,8 +170,14 @@ const adminUpdateShopStatus = async (req, res) => {
     }
 
     shop.status = status;
-    shop.rejection_reason =
-      status === "REJECTED" ? rejection_reason || "Not specified" : undefined;
+    if (status === "REJECTED") {
+      shop.rejection_reason = rejection_reason || "Not specified";
+    } else {
+      shop.rejection_reason = undefined;
+    }
+    if (status === "SUSPENDED") {
+      shop.is_open = false;
+    }
 
     await shop.save();
 

@@ -43,7 +43,7 @@ const shopSchema = new mongoose.Schema(
     },
     status: {
       type: String,
-      enum: ["PENDING", "APPROVED", "REJECTED"],
+      enum: ["PENDING", "APPROVED", "REJECTED", "SUSPENDED"],
       default: "PENDING",
       index: true
     },

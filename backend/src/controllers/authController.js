@@ -1,6 +1,7 @@
 const jwt = require("jsonwebtoken");
 const User = require("../models/User");
 const Otp = require("../models/Otp");
+const Shop = require("../models/Shop");
 const { createAndSendNotification } = require("../services/notificationService");
 
 const sendOtp = async (req, res) => {
@@ -26,7 +27,6 @@ const sendOtp = async (req, res) => {
     const message = `Your Gajraula Eats login code is: ${otpCode}. Valid for 5 minutes.`;
 
     try {
-      // Send the SMS
       await createAndSendNotification({
         userId: null, 
         orderId: null,
@@ -34,7 +34,7 @@ const sendOtp = async (req, res) => {
         type: "AUTH_OTP",
         title: "Login OTP",
         message: message,
-        to: phone.startsWith("+") ? phone : `+91${phone}`, // Assume Indian number by default if no +
+        to: phone.startsWith("+") ? phone : `+91${phone}`,
         meta: {}
       });
 
@@ -56,43 +56,81 @@ const sendOtp = async (req, res) => {
 
 const verifyOtp = async (req, res) => {
   try {
-    const { phone, otp } = req.body;
+    const { phone, otp, role } = req.body;
 
     if (!phone || !otp) {
       return res.status(400).json({ message: "Phone and OTP required" });
     }
 
-    // Find the OTP in DB
+    // Find and validate OTP
     const otpRecord = await Otp.findOne({ phone, otp });
     if (!otpRecord) {
       return res.status(400).json({ message: "Invalid or expired OTP" });
     }
 
-    // Delete the OTP to prevent reuse
+    // Delete OTP to prevent reuse
     await Otp.deleteOne({ _id: otpRecord._id });
 
-    let user;
-    try {
-      user = await User.findOne({ phone });
-    } catch (dbErr) {
-      console.warn("DB findOne failed, using mock user. Error:", dbErr.message);
-      // Mock user for dev purposes
-      user = { _id: "mock-id-123", phone, role: "CUSTOMER", status: "ACTIVE", name: "Mock User" };
-    }
+    // ── 1. Find or create user ────────────────────────────────────────────────
+    let user = await User.findOne({ phone });
 
     if (!user) {
-      try {
-        user = await User.create({ phone, role: "CUSTOMER" });
-      } catch (dbErr) {
-        console.warn("DB create failed, using mock user. Error:", dbErr.message);
-        user = { _id: "mock-id-" + Date.now(), phone, role: "CUSTOMER", status: "ACTIVE", name: "Mock User" };
-      }
+      // Determine role: use provided role, default to CUSTOMER
+      const assignedRole = role && ["SHOP_OWNER", "CUSTOMER", "DELIVERY_PARTNER"].includes(role)
+        ? role
+        : "CUSTOMER";
+
+      console.log(`[Auth] Creating new user: phone=${phone} role=${assignedRole}`);
+      user = await User.create({ phone, role: assignedRole });
     }
 
     if (user.status === "BLOCKED") {
       return res.status(403).json({ message: "User is blocked" });
     }
 
+    // ── 2. SHOP_OWNER: auto-create PENDING shop if none exists ────────────────
+    let shopData = null;
+
+    if (user.role === "SHOP_OWNER") {
+      let shop = await Shop.findOne({ owner_user_id: user._id });
+
+      if (!shop) {
+        console.log(`[Auth] Auto-creating PENDING shop for SHOP_OWNER: ${phone}`);
+        try {
+          shop = await Shop.create({
+            owner_user_id: user._id,
+            name: "New Shop",          // owner fills this in later via settings
+            status: "PENDING",
+            is_open: false,
+            address: {
+              line1: "To be updated",
+              city: "Gajraula",
+              state: "Uttar Pradesh",
+              location: {
+                type: "Point",
+                coordinates: [78.2276, 28.8955]  // Gajraula default coords
+              }
+            }
+          });
+        } catch (shopErr) {
+          // If unique constraint fires (race condition), just fetch it
+          console.warn("[Auth] Shop create conflict, fetching existing:", shopErr.message);
+          shop = await Shop.findOne({ owner_user_id: user._id });
+        }
+      }
+
+      if (shop) {
+        shopData = {
+          _id: shop._id,
+          name: shop.name,
+          status: shop.status,
+          isActive: shop.is_open,
+          rejectionReason: shop.rejection_reason || null
+        };
+      }
+    }
+
+    // ── 3. Sign JWT ───────────────────────────────────────────────────────────
     const token = jwt.sign(
       {
         userId: user._id.toString(),
@@ -102,7 +140,8 @@ const verifyOtp = async (req, res) => {
       { expiresIn: process.env.JWT_EXPIRES_IN || "7d" }
     );
 
-    res.json({
+    // ── 4. Respond ────────────────────────────────────────────────────────────
+    return res.json({
       success: true,
       token,
       user: {
@@ -110,8 +149,10 @@ const verifyOtp = async (req, res) => {
         phone: user.phone,
         role: user.role,
         name: user.name
-      }
+      },
+      shop: shopData   // null for non-SHOP_OWNER roles
     });
+
   } catch (err) {
     console.error("verifyOtp error:", err);
     res.status(500).json({ message: "Server error" });
