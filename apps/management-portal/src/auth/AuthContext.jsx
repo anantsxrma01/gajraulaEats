@@ -1,22 +1,56 @@
 import React, { createContext, useContext, useEffect, useState } from "react";
-import api from "../api/client";
 
 const AuthContext = createContext(null);
 
+function decodeJwt(token) {
+  try {
+    const base64Url = token.split(".")[1];
+    const base64 = base64Url.replace(/-/g, "+").replace(/_/g, "/");
+    const jsonPayload = decodeURIComponent(
+      atob(base64)
+        .split("")
+        .map(function (c) {
+          return "%" + ("00" + c.charCodeAt(0).toString(16)).slice(-2);
+        })
+        .join("")
+    );
+    return JSON.parse(jsonPayload);
+  } catch (e) {
+    return null;
+  }
+}
+
 export function AuthProvider({ children }) {
-  const [user, setUser] = useState(null);   // { token, role, phone, name }
+  const [user, setUser] = useState(null); // { token, role, phone, name, id }
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    // initial load पर token check
-    const token = localStorage.getItem("admin_token");
-    const role = localStorage.getItem("admin_role");
-    const phone = localStorage.getItem("admin_phone");
+    const initAuth = () => {
+      const token = localStorage.getItem("admin_token");
+      if (!token) {
+        setLoading(false);
+        return;
+      }
 
-    if (token && role) {
-      setUser({ token, role, phone });
-    }
-    setLoading(false);
+      const role = localStorage.getItem("admin_role");
+      const phone = localStorage.getItem("admin_phone");
+      const decoded = decodeJwt(token);
+
+      if (decoded) {
+        setUser({
+          token,
+          id: decoded.userId || decoded.id,
+          role: role || decoded.role || "ADMIN", // fallbacks
+          phone: phone || decoded.phone,
+          name: decoded.name,
+        });
+      } else {
+        localStorage.removeItem("admin_token");
+      }
+      setLoading(false);
+    };
+
+    initAuth();
   }, []);
 
   const loginWithToken = (token, userInfo) => {
@@ -26,6 +60,7 @@ export function AuthProvider({ children }) {
 
     setUser({
       token,
+      id: userInfo.id,
       role: userInfo.role,
       phone: userInfo.phone,
       name: userInfo.name,
@@ -37,6 +72,7 @@ export function AuthProvider({ children }) {
     localStorage.removeItem("admin_role");
     localStorage.removeItem("admin_phone");
     setUser(null);
+    window.location.href = "/login";
   };
 
   const value = { user, loading, loginWithToken, logout };

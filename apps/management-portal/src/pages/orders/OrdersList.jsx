@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from "react";
 import { Link, useSearchParams } from "react-router-dom";
-import api from "../../api/client";
+import api from "../../api/apiClient";
 
 const STATUS_OPTIONS = [
   "PLACED", "CONFIRMED", "PREPARING", "READY_FOR_PICKUP",

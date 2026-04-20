@@ -5,6 +5,11 @@ import ProtectedRoute from "./auth/ProtectedRoute";
 import Layout from "./components/Layout";
 
 import Login from "./pages/Login";
+import Dashboard from "./pages/Dashboard";
+import Users from "./pages/Users";
+import Shops from "./pages/Shops";
+
+// If Orders and Tickets still exist as backup, we can leave their imports
 import OrdersList from "./pages/orders/OrdersList";
 import OrderDetail from "./pages/orders/OrderDetail";
 import TicketsList from "./pages/tickets/TicketsList";
@@ -20,9 +25,42 @@ export default function App() {
           <Route
             path="/"
             element={
-              <ProtectedRoute allowedRoles={["OWNER", "MANAGER"]}>
+              <ProtectedRoute allowedRoles={["ADMIN", "OWNER", "MANAGER"]}>
                 <Layout>
-                  <Navigate to="/orders" replace />
+                  <Navigate to="/dashboard" replace />
+                </Layout>
+              </ProtectedRoute>
+            }
+          />
+
+          <Route
+            path="/dashboard"
+            element={
+              <ProtectedRoute allowedRoles={["ADMIN", "OWNER", "MANAGER"]}>
+                <Layout>
+                  <Dashboard />
+                </Layout>
+              </ProtectedRoute>
+            }
+          />
+
+          <Route
+            path="/users"
+            element={
+              <ProtectedRoute allowedRoles={["ADMIN", "OWNER", "MANAGER"]}>
+                <Layout>
+                  <Users />
+                </Layout>
+              </ProtectedRoute>
+            }
+          />
+
+          <Route
+            path="/shops"
+            element={
+              <ProtectedRoute allowedRoles={["ADMIN", "OWNER", "MANAGER"]}>
+                <Layout>
+                  <Shops />
                 </Layout>
               </ProtectedRoute>
             }
@@ -31,7 +69,7 @@ export default function App() {
           <Route
             path="/orders"
             element={
-              <ProtectedRoute allowedRoles={["OWNER", "MANAGER"]}>
+              <ProtectedRoute allowedRoles={["ADMIN", "OWNER", "MANAGER"]}>
                 <Layout>
                   <OrdersList />
                 </Layout>
@@ -42,7 +80,7 @@ export default function App() {
           <Route
             path="/orders/:id"
             element={
-              <ProtectedRoute allowedRoles={["OWNER", "MANAGER"]}>
+              <ProtectedRoute allowedRoles={["ADMIN", "OWNER", "MANAGER"]}>
                 <Layout>
                   <OrderDetail />
                 </Layout>
@@ -53,7 +91,7 @@ export default function App() {
           <Route
             path="/tickets"
             element={
-              <ProtectedRoute allowedRoles={["OWNER", "MANAGER"]}>
+              <ProtectedRoute allowedRoles={["ADMIN", "OWNER", "MANAGER"]}>
                 <Layout>
                   <TicketsList />
                 </Layout>
@@ -64,7 +102,7 @@ export default function App() {
           <Route
             path="/tickets/:id"
             element={
-              <ProtectedRoute allowedRoles={["OWNER", "MANAGER"]}>
+              <ProtectedRoute allowedRoles={["ADMIN", "OWNER", "MANAGER"]}>
                 <Layout>
                   <TicketDetail />
                 </Layout>
@@ -72,7 +110,7 @@ export default function App() {
             }
           />
 
-          <Route path="*" element={<Navigate to="/orders" replace />} />
+          <Route path="*" element={<Navigate to="/dashboard" replace />} />
         </Routes>
       </BrowserRouter>
     </AuthProvider>

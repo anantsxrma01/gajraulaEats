@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
-import api from "../../api/client";
+import api from "../../api/apiClient";
 
 const statusOptions = ["OPEN", "IN_PROGRESS", "RESOLVED", "CLOSED"];
 
