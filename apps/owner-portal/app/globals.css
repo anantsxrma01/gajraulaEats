@@ -1,12 +1,31 @@
+@import "tailwindcss";
 @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
 
-@tailwind base;
-@tailwind components;
-@tailwind utilities;
+@theme {
+  --color-background: #09090b;
+  --color-foreground: #fafafa;
+  --color-card: rgba(255, 255, 255, 0.03);
+  --color-border: rgba(255, 255, 255, 0.08);
+  --color-primary: #f59e0b;
+  --font-sans: 'Inter', sans-serif;
+}
 
 @layer base {
-  body {
+  *, *::before, *::after {
+    box-sizing: border-box;
+  }
+  html {
+    background-color: #09090b;
+    color: #fafafa;
     font-family: 'Inter', sans-serif;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+  }
+  body {
+    background-color: #09090b;
+    color: #fafafa;
+    font-family: 'Inter', sans-serif;
+    min-height: 100vh;
   }
 }
 
@@ -28,7 +47,7 @@
   background-color: rgba(251, 191, 36, 0.2);
   border: 1px solid rgba(251, 191, 36, 0.3);
   box-shadow: 0 0 15px rgba(251, 191, 36, 0.2);
-  color: #f59e0b; /* text-amber-500 equivalent */
+  color: #f59e0b;
 }
 
 .custom-scrollbar::-webkit-scrollbar {
@@ -45,3 +64,4 @@
 .custom-scrollbar::-webkit-scrollbar-thumb:hover {
   background-color: rgba(255, 255, 255, 0.2);
 }
+
