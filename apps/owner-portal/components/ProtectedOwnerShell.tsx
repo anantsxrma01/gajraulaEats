@@ -2,192 +2,176 @@
 
 import { ReactNode, useEffect, useState } from "react";
 import { useAuth } from "@/context/AuthContext";
-import { apiFetch } from "@/lib/apiClient";
 import Link from "next/link";
-import { usePathname } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
+import { motion, AnimatePresence } from "framer-motion";
+import { LayoutDashboard, Store, Users, Landmark, Settings, LogOut, Menu, X } from "lucide-react";
+import { Loader } from "./ui/Loader";
+import toast from "react-hot-toast";
 
 const NAV = [
-  {
-    href: "/dashboard",
-    label: "Overview",
-    icon: (
-      <svg width="16" height="16" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-        <path strokeLinecap="round" strokeLinejoin="round" d="M4 5a1 1 0 011-1h4a1 1 0 011 1v5a1 1 0 01-1 1H5a1 1 0 01-1-1V5zM14 5a1 1 0 011-1h4a1 1 0 011 1v2a1 1 0 01-1 1h-4a1 1 0 01-1-1V5zM4 15a1 1 0 011-1h4a1 1 0 011 1v4a1 1 0 01-1 1H5a1 1 0 01-1-1v-4zM14 13a1 1 0 011-1h4a1 1 0 011 1v6a1 1 0 01-1 1h-4a1 1 0 01-1-1v-6z" />
-      </svg>
-    ),
-  },
-  {
-    href: "/shops",
-    label: "Shops",
-    icon: (
-      <svg width="16" height="16" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-        <path strokeLinecap="round" strokeLinejoin="round" d="M3 9l9-7 9 7v11a2 2 0 01-2 2H5a2 2 0 01-2-2z" />
-        <polyline points="9 22 9 12 15 12 15 22" stroke="currentColor" strokeWidth={2} />
-      </svg>
-    ),
-  },
-  {
-    href: "/delivery-partners",
-    label: "Delivery Partners",
-    icon: (
-      <svg width="16" height="16" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-        <path strokeLinecap="round" strokeLinejoin="round" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0z" />
-      </svg>
-    ),
-  },
-  {
-    href: "/payouts",
-    label: "Payouts",
-    icon: (
-      <svg width="16" height="16" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-        <path strokeLinecap="round" strokeLinejoin="round" d="M17 9V7a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2m2 4h10a2 2 0 002-2v-6a2 2 0 00-2-2H9a2 2 0 00-2 2v6a2 2 0 002 2zm7-5a2 2 0 11-4 0 2 2 0 014 0z" />
-      </svg>
-    ),
-  },
-  {
-    href: "/settings",
-    label: "Settings",
-    icon: (
-      <svg width="16" height="16" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-        <path strokeLinecap="round" strokeLinejoin="round" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z" />
-        <path strokeLinecap="round" strokeLinejoin="round" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
-      </svg>
-    ),
-  },
+  { href: "/dashboard", label: "Overview", icon: LayoutDashboard },
+  { href: "/shops", label: "Shops", icon: Store },
+  { href: "/delivery-partners", label: "Delivery Partners", icon: Users },
+  { href: "/payouts", label: "Payouts", icon: Landmark },
+  { href: "/settings", label: "Settings", icon: Settings },
 ];
 
 export default function ProtectedOwnerShell({ children }: { children: ReactNode }) {
   const { user, loading, logout } = useAuth();
   const [checking, setChecking] = useState(true);
-  const [error, setError] = useState<string | null>(null);
-  const [ownerName, setOwnerName] = useState<string | null>(null);
   const pathname = usePathname();
+  const router = useRouter();
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
   useEffect(() => {
-    const verifyOwner = async () => {
-      try {
-        if (!user) { window.location.href = "/login"; return; }
-        if (user.role !== "OWNER") {
-          setError("You are not allowed to access the Owner Portal.");
-          logout(); return;
-        }
-        await apiFetch("/admin/shops?status=PENDING");
-        setOwnerName(user.phone || "Owner");
-      } catch (e: any) {
-        setError("Session expired or unauthorized. Please login again.");
-        logout();
-      } finally {
-        setChecking(false);
+    if (!loading) {
+      if (!user) {
+        router.replace("/login");
+        return;
       }
-    };
-    if (!loading) verifyOwner();
-  }, [loading, user, logout]);
+      if (user.role !== "OWNER" && user.role !== "ADMIN") {
+        router.replace("/not-allowed");
+        return;
+      }
+      setChecking(false);
+    }
+  }, [loading, user, router]);
 
   if (loading || checking) {
     return (
-      <div style={{ minHeight: "100vh", display: "flex", alignItems: "center", justifyContent: "center" }}>
-        <div style={{
-          width: 40, height: 40, borderRadius: "50%",
-          border: "3px solid rgba(251,191,36,0.2)", borderTopColor: "#f59e0b",
-          animation: "spin 0.8s linear infinite"
-        }} />
-        <style>{`@keyframes spin { to { transform: rotate(360deg); } }`}</style>
+      <div className="min-h-screen flex items-center justify-center bg-black">
+        <Loader />
       </div>
     );
   }
 
-  if (error) {
-    return (
-      <div style={{ minHeight: "100vh", display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", gap: 16 }}>
-        <p style={{ color: "#f87171", fontSize: 14 }}>{error}</p>
-        <button onClick={logout} style={{
-          padding: "8px 18px", borderRadius: 8, fontSize: 13,
-          background: "rgba(239,68,68,0.1)", color: "#f87171",
-          border: "1px solid rgba(239,68,68,0.2)", cursor: "pointer"
-        }}>Go to Login</button>
-      </div>
-    );
-  }
+  const handleLogout = () => {
+    toast.success("Successfully logged out");
+    logout();
+  };
 
-  return (
-    <div style={{ display: "flex", minHeight: "100vh" }}>
-      {/* Sidebar */}
-      <aside className="glass-sidebar" style={{ width: 230, flexShrink: 0, display: "flex", flexDirection: "column" }}>
-        {/* Brand */}
-        <div style={{ padding: "24px 20px 18px", borderBottom: "1px solid rgba(255,255,255,0.05)" }}>
-          <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
-            <div style={{
-              width: 34, height: 34, borderRadius: 10, flexShrink: 0,
-              background: "linear-gradient(135deg, #fbbf24, #d97706)",
-              display: "flex", alignItems: "center", justifyContent: "center",
-              boxShadow: "0 0 24px rgba(251,191,36,0.35)"
-            }}>
-              <svg width="18" height="18" fill="none" viewBox="0 0 24 24" stroke="white" strokeWidth={2}>
-                <path strokeLinecap="round" strokeLinejoin="round" d="M5 3l14 9-14 9V3z" />
-              </svg>
+  const SidebarContent = () => (
+    <>
+      <div className="p-6 border-b border-white/5">
+        <div className="flex items-center gap-3">
+          <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-amber-400 to-amber-600 flex items-center justify-center shadow-[0_0_20px_rgba(251,191,36,0.2)]">
+            <Store className="text-black w-5 h-5" />
+          </div>
+          <div>
+            <div className="font-bold text-sm tracking-widest text-white">
+              OWNER<span className="text-amber-500">HUB</span>
             </div>
-            <div>
-              <div style={{ fontWeight: 700, fontSize: 14, letterSpacing: "0.04em" }}>
-                OWNER<span style={{ color: "#f59e0b" }}>HUB</span>
-              </div>
-              <div style={{ fontSize: 11, color: "#71717a" }}>{ownerName}</div>
-            </div>
+            <div className="text-xs text-zinc-500 font-medium">{user?.phone || "Admin"}</div>
           </div>
         </div>
+      </div>
 
-        {/* Nav */}
-        <nav style={{ flex: 1, padding: "12px 8px" }}>
-          {NAV.map(({ href, label, icon }) => {
-            const isActive = pathname === href || pathname?.startsWith(href + "/");
-            return (
-              <Link key={href} href={href} style={{
-                display: "flex", alignItems: "center", gap: 10, padding: "10px 14px",
-                borderRadius: 10, marginBottom: 3, fontSize: 13, fontWeight: 500,
-                textDecoration: "none", transition: "all 0.2s",
-                background: isActive ? "rgba(251,191,36,0.12)" : "transparent",
-                color: isActive ? "#fbbf24" : "#a1a1aa",
-                border: `1px solid ${isActive ? "rgba(251,191,36,0.22)" : "transparent"}`,
-              }}>
-                {icon} {label}
-              </Link>
-            );
-          })}
-        </nav>
+      <nav className="flex-1 p-4 space-y-1 overflow-y-auto custom-scrollbar">
+        {NAV.map(({ href, label, icon: Icon }) => {
+          const isActive = pathname === href || pathname?.startsWith(href + "/");
+          return (
+            <Link key={href} href={href} onClick={() => setMobileMenuOpen(false)}>
+              <span className={`flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-medium transition-all relative ${
+                isActive ? "text-amber-400" : "text-zinc-400 hover:text-white hover:bg-white/5"
+              }`}>
+                {isActive && (
+                  <motion.div
+                    layoutId="active-nav"
+                    className="absolute inset-0 bg-amber-400/10 border border-amber-400/20 rounded-xl shadow-[0_0_15px_rgba(251,191,36,0.1)]"
+                    initial={false}
+                    transition={{ type: "spring", stiffness: 300, damping: 30 }}
+                  />
+                )}
+                <Icon className="w-5 h-5 relative z-10" />
+                <span className="relative z-10">{label}</span>
+              </span>
+            </Link>
+          );
+        })}
+      </nav>
 
-        {/* Logout */}
-        <div style={{ padding: "12px 8px", borderTop: "1px solid rgba(255,255,255,0.05)" }}>
-          <button onClick={logout} style={{
-            width: "100%", padding: "9px 14px", borderRadius: 10, fontSize: 13,
-            fontWeight: 500, background: "rgba(239,68,68,0.07)", color: "#f87171",
-            border: "1px solid rgba(239,68,68,0.18)", cursor: "pointer", transition: "background 0.2s"
-          }}>
-            Logout
-          </button>
-        </div>
+      <div className="p-4 border-t border-white/5">
+        <button
+          onClick={handleLogout}
+          className="w-full flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-medium text-red-400 hover:bg-red-400/10 hover:text-red-300 transition-colors"
+        >
+          <LogOut className="w-5 h-5" />
+          Logout
+        </button>
+      </div>
+    </>
+  );
+
+  return (
+    <div className="flex h-screen overflow-hidden bg-black text-white selection:bg-amber-500/30">
+      
+      {/* Desktop Sidebar */}
+      <aside className="hidden lg:flex w-[280px] flex-col glass-sidebar z-20">
+        <SidebarContent />
       </aside>
 
-      {/* Main */}
-      <div style={{ flex: 1, display: "flex", flexDirection: "column", overflow: "hidden" }}>
-        {/* Topbar */}
-        <header style={{
-          height: 60, display: "flex", alignItems: "center", justifyContent: "space-between",
-          padding: "0 24px", borderBottom: "1px solid rgba(255,255,255,0.06)",
-          background: "rgba(9,9,11,0.8)", backdropFilter: "blur(20px)", flexShrink: 0
-        }}>
-          <h1 style={{ fontSize: 16, fontWeight: 600, color: "#fafafa" }}>
-            {NAV.find(n => pathname === n.href || pathname?.startsWith(n.href + "/"))?.label ?? "Owner Portal"}
-          </h1>
-          <div style={{
-            padding: "5px 12px", borderRadius: 8, fontSize: 12, fontWeight: 500,
-            background: "rgba(251,191,36,0.1)", color: "#fbbf24",
-            border: "1px solid rgba(251,191,36,0.2)"
-          }}>
-            OWNER
+      {/* Mobile Drawer */}
+      <AnimatePresence>
+        {mobileMenuOpen && (
+          <>
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              onClick={() => setMobileMenuOpen(false)}
+              className="fixed inset-0 bg-black/80 backdrop-blur-sm z-40 lg:hidden"
+            />
+            <motion.aside
+              initial={{ x: "-100%" }}
+              animate={{ x: 0 }}
+              exit={{ x: "-100%" }}
+              transition={{ type: "spring", bounce: 0, duration: 0.4 }}
+              className="fixed inset-y-0 left-0 w-[280px] flex flex-col glass z-50 lg:hidden border-r border-white/10"
+            >
+              <SidebarContent />
+            </motion.aside>
+          </>
+        )}
+      </AnimatePresence>
+
+      {/* Main Content Area */}
+      <div className="flex-1 flex flex-col min-w-0 z-10 relative">
+        <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top_right,_var(--tw-gradient-stops))] from-amber-500/5 via-transparent to-transparent pointer-events-none" />
+        
+        {/* Top Header */}
+        <header className="h-[72px] flex items-center justify-between px-6 glass border-b border-white/5 sticky top-0 z-20 shrink-0">
+          <div className="flex items-center gap-4">
+            <button
+              onClick={() => setMobileMenuOpen(true)}
+              className="p-2 -ml-2 rounded-lg text-zinc-400 hover:text-white hover:bg-white/5 lg:hidden transition-colors"
+            >
+              <Menu className="w-6 h-6" />
+            </button>
+            <h1 className="text-lg font-semibold tracking-tight">
+              {NAV.find(n => pathname === n.href || pathname?.startsWith(n.href + "/"))?.label ?? "Dashboard"}
+            </h1>
+          </div>
+          <div className="px-3 py-1.5 rounded-lg bg-amber-500/10 border border-amber-500/20 text-xs font-bold tracking-wider text-amber-500 flex items-center gap-2">
+            <span className="w-1.5 h-1.5 rounded-full bg-amber-500 animate-pulse" />
+            {user?.role}
           </div>
         </header>
 
-        <main style={{ flex: 1, overflowY: "auto", padding: 28 }}>
-          {children}
+        {/* Dynamic Page Content */}
+        <main className="flex-1 overflow-y-auto custom-scrollbar p-4 lg:p-8 relative">
+          <AnimatePresence mode="wait">
+            <motion.div
+              key={pathname}
+              initial={{ opacity: 0, y: 10 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: -10 }}
+              transition={{ duration: 0.3 }}
+              className="max-w-7xl mx-auto w-full"
+            >
+              {children}
+            </motion.div>
+          </AnimatePresence>
         </main>
       </div>
     </div>

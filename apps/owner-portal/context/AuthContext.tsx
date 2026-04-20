@@ -7,12 +7,12 @@ import React, {
   useState,
   ReactNode
 } from "react";
-import { apiFetch } from "@/lib/apiClient";
+import { apiFetch, clearAuthAndRedirect } from "@/lib/apiClient";
 
 type UserInfo = {
   id: string;
   phone: string;
-  role: string; // OWNER
+  role: string;
 } | null;
 
 type AuthContextType = {
@@ -25,31 +25,37 @@ type AuthContextType = {
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
+function decodeJwt(token: string) {
+  try {
+    const base64Url = token.split(".")[1];
+    const base64 = base64Url.replace(/-/g, "+").replace(/_/g, "/");
+    const jsonPayload = decodeURIComponent(
+      atob(base64)
+        .split("")
+        .map((c) => "%" + ("00" + c.charCodeAt(0).toString(16)).slice(-2))
+        .join("")
+    );
+    return JSON.parse(jsonPayload);
+  } catch (e) {
+    return null;
+  }
+}
+
 export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const [user, setUser] = useState<UserInfo>(null);
   const [loading, setLoading] = useState(true);
 
-  // Read token from localStorage
   const getToken = () => {
     if (typeof window === "undefined") return null;
     return localStorage.getItem("authToken");
   };
 
-  // Save token
   const saveToken = (token: string) => {
     if (typeof window !== "undefined") {
       localStorage.setItem("authToken", token);
     }
   };
 
-  // Delete token
-  const clearToken = () => {
-    if (typeof window !== "undefined") {
-      localStorage.removeItem("authToken");
-    }
-  };
-
-  // Send OTP API
   const sendOtp = async (phone: string) => {
     try {
       await apiFetch("/auth/send-otp", {
@@ -62,7 +68,6 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     }
   };
 
-  // Verify OTP + login
   const loginWithOtp = async (phone: string, otp: string) => {
     try {
       const res = await apiFetch("/auth/verify-otp", {
@@ -70,10 +75,13 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
         body: JSON.stringify({ phone, otp })
       });
 
-      saveToken(res.token);
+      if (!res.token || !res.user) {
+        throw new Error("Invalid response from server");
+      }
 
+      saveToken(res.token);
       setUser({
-        id: res.user.id,
+        id: res.user.id || res.user._id,
         phone: res.user.phone,
         role: res.user.role
       });
@@ -83,42 +91,30 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     }
   };
 
-  // Logout
   const logout = () => {
-    clearToken();
     setUser(null);
-    if (typeof window !== "undefined") {
-      window.location.href = "/login";
-    }
+    clearAuthAndRedirect();
   };
 
-  // Validate token on page load by decoding JWT locally (no API call needed)
   const validateSession = () => {
     const token = getToken();
     if (!token) {
       setLoading(false);
       return;
     }
-    try {
-      // Decode JWT payload (base64) — no signature verification needed client-side
-      const payload = JSON.parse(atob(token.split(".")[1]));
-      // Check expiry
-      if (payload.exp * 1000 < Date.now()) {
-        clearToken();
-        setUser(null);
-      } else {
-        setUser({
-          id: payload.userId,
-          phone: payload.phone ?? "N/A",
-          role: payload.role,
-        });
-      }
-    } catch {
-      clearToken();
-      setUser(null);
-    } finally {
-      setLoading(false);
+
+    const payload = decodeJwt(token);
+    
+    if (!payload || (payload.exp && payload.exp * 1000 < Date.now())) {
+      logout();
+    } else {
+      setUser({
+        id: payload.userId || payload.id,
+        phone: payload.phone || "N/A",
+        role: payload.role,
+      });
     }
+    setLoading(false);
   };
 
   useEffect(() => {
@@ -140,10 +136,8 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   );
 };
 
-// Hook to use auth context
 export const useAuth = () => {
   const ctx = useContext(AuthContext);
-  if (!ctx)
-    throw new Error("useAuth must be used inside <AuthProvider>");
+  if (!ctx) throw new Error("useAuth must be used inside <AuthProvider>");
   return ctx;
 };
